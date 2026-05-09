@@ -45,7 +45,9 @@ class DuckscanView extends GetView<DuckscanController> {
               icon: Icons.medical_services,
               label: "Health",
 
-              onTap: () {},
+              onTap: () {
+                Get.toNamed('/duck-management');
+              },
             ),
 
             BottomNavItem(

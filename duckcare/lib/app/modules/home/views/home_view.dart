@@ -65,7 +65,9 @@ class HomeView extends GetView<HomeController> {
             BottomItem(
               icon: Icons.medical_services,
               label: "Health",
-              onTap: () {},
+              onTap: () {
+                Get.toNamed('/duck-management');
+              },
             ),
 
             /// SPACE FOR FAB
