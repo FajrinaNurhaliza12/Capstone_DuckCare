@@ -11,101 +11,21 @@ class HomeView extends GetView<HomeController> {
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FB),
 
-      /// FLOATING BUTTON
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xff10B981),
-
-        onPressed: () {
-          Get.toNamed('/duckscan');
-        },
-
-        child: const Icon(
-          Icons.camera_alt,
-          color: Colors.white,
-        ),
-      ),
-
       /// BOTTOM NAVIGATION
-      bottomNavigationBar: Container(
-        height: 85,
-
-        decoration: BoxDecoration(
-          color: Colors.white,
-
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(30),
-          ),
-
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              color: Colors.black.withOpacity(0.05),
-            ),
-          ],
-        ),
-
-        child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.spaceAround,
-
-          children: [
-
-            /// HOME
-            BottomItem(
-              icon: Icons.grid_view,
-              label: "Home",
-              active: true,
-              onTap: () {},
-            ),
-
-            /// HEALTH
-            BottomItem(
-              icon: Icons.medical_services,
-              label: "Health",
-              onTap: () {
-                Get.toNamed('/duck-management');
-              },
-            ),
-
-            /// SPACE FOR FAB
-            const SizedBox(width: 40),
-
-            /// REPORTS
-            BottomItem(
-              icon: Icons.analytics,
-              label: "Reports",
-              onTap: () {},
-            ),
-
-            /// PROFILE
-            BottomItem(
-              icon: Icons.person,
-              label: "Profile",
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: _bottomNav(),
 
       /// BODY
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
               /// HEADER
               Row(
                 mainAxisAlignment:
                     MainAxisAlignment.spaceBetween,
-
                 children: [
 
                   Row(
@@ -114,15 +34,12 @@ class HomeView extends GetView<HomeController> {
                       Container(
                         width: 50,
                         height: 50,
-
                         decoration: BoxDecoration(
                           borderRadius:
                               BorderRadius.circular(50),
-
-                          image:
-                              const DecorationImage(
-                            image: NetworkImage(
-                              "https://i.pravatar.cc/300",
+                          image: const DecorationImage(
+                            image: AssetImage(
+                              "assets/images/duck.jpg",
                             ),
                             fit: BoxFit.cover,
                           ),
@@ -134,9 +51,7 @@ class HomeView extends GetView<HomeController> {
                       const Column(
                         crossAxisAlignment:
                             CrossAxisAlignment.start,
-
                         children: [
-
                           Text(
                             "DuckCare",
                             style: TextStyle(
@@ -147,7 +62,6 @@ class HomeView extends GetView<HomeController> {
                                   Color(0xff10B981),
                             ),
                           ),
-
                           Text(
                             "Smart Duck Monitoring",
                           ),
@@ -158,7 +72,6 @@ class HomeView extends GetView<HomeController> {
 
                   IconButton(
                     onPressed: () {},
-
                     icon: const Icon(
                       Icons.notifications_none,
                       size: 30,
@@ -169,7 +82,6 @@ class HomeView extends GetView<HomeController> {
 
               const SizedBox(height: 30),
 
-              /// TITLE
               const Text(
                 "Good Morning 👋",
                 style: TextStyle(
@@ -190,7 +102,6 @@ class HomeView extends GetView<HomeController> {
 
               const SizedBox(height: 25),
 
-              /// DASHBOARD CARD
               Obx(
                 () => DashboardCard(
                   title: "Total Ducks",
@@ -231,27 +142,25 @@ class HomeView extends GetView<HomeController> {
 
               const SizedBox(height: 25),
 
-              /// AI SCANNER CARD
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
-
+                padding:
+                    const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient:
+                      const LinearGradient(
                     colors: [
                       Color(0xff10B981),
                       Color(0xff059669),
                     ],
                   ),
-
                   borderRadius:
-                      BorderRadius.circular(30),
+                      BorderRadius.circular(
+                          30),
                 ),
-
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
-
                   children: [
 
                     const Icon(
@@ -286,22 +195,20 @@ class HomeView extends GetView<HomeController> {
 
                     ElevatedButton(
                       style:
-                          ElevatedButton.styleFrom(
+                          ElevatedButton
+                              .styleFrom(
                         backgroundColor:
                             Colors.white,
-
                         foregroundColor:
                             const Color(
                                 0xff10B981),
                       ),
-
                       onPressed: () {
-                        Get.toNamed('/duckscan');
+                        Get.toNamed(
+                            '/duckscan');
                       },
-
                       child: const Text(
-                        "OPEN SCANNER",
-                      ),
+                          "OPEN SCANNER"),
                     ),
                   ],
                 ),
@@ -314,10 +221,159 @@ class HomeView extends GetView<HomeController> {
       ),
     );
   }
+
+  /// NAVBAR
+  Widget _bottomNav() {
+    return Container(
+      height: 80,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+      ),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius:
+            const BorderRadius.vertical(
+          top: Radius.circular(25),
+        ),
+
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            color:
+                Colors.black.withOpacity(
+                    0.04),
+          ),
+        ],
+      ),
+
+      child: Row(
+        mainAxisAlignment:
+            MainAxisAlignment.spaceEvenly,
+
+        children: [
+
+          Expanded(
+            child: _navItem(
+              icon:
+                  Icons.grid_view_rounded,
+              label: "Home",
+              active: true,
+              onTap: () {},
+            ),
+          ),
+
+          Expanded(
+            child: _navItem(
+              icon: Icons
+                  .favorite_border_rounded,
+              label: "Health",
+              onTap: () {
+                Get.toNamed(
+                    '/duck-management');
+              },
+            ),
+          ),
+
+          Expanded(
+            child: _navItem(
+              icon: Icons
+                  .camera_alt_outlined,
+              label: "Scan",
+              onTap: () {
+                Get.toNamed(
+                    '/duckscan');
+              },
+            ),
+          ),
+
+          Expanded(
+            child: _navItem(
+              icon:
+                  Icons.bar_chart_rounded,
+              label: "Reports",
+              onTap: () {},
+            ),
+          ),
+
+          Expanded(
+            child: _navItem(
+              icon: Icons
+                  .person_outline_rounded,
+              label: "Profile",
+              onTap: () {},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class DashboardCard extends StatelessWidget {
+/// NAV ITEM
+Widget _navItem({
+  required IconData icon,
+  required String label,
+  required VoidCallback onTap,
+  bool active = false,
+}) {
+  return GestureDetector(
+    onTap: onTap,
 
+    child: AnimatedContainer(
+      duration:
+          const Duration(milliseconds: 180),
+
+      height: double.infinity,
+
+      transform:
+          Matrix4.translationValues(
+        0,
+        active ? -4 : 0,
+        0,
+      ),
+
+      child: Column(
+        mainAxisAlignment:
+            MainAxisAlignment.center,
+        children: [
+
+          Icon(
+            icon,
+            size: 24,
+            color: active
+                ? const Color(
+                    0xff10B981)
+                : Colors
+                    .grey.shade500,
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: active
+                  ? FontWeight.w600
+                  : FontWeight.w500,
+              color: active
+                  ? const Color(
+                      0xff10B981)
+                  : Colors
+                      .grey.shade500,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// DASHBOARD CARD
+class DashboardCard
+    extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
@@ -334,121 +390,64 @@ class DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-
+      padding:
+          const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-
-        borderRadius: BorderRadius.circular(25),
-
+        borderRadius:
+            BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
             blurRadius: 10,
-            color: Colors.black.withOpacity(0.03),
+            color:
+                Colors.black.withOpacity(
+                    0.03),
           ),
         ],
       ),
-
       child: Row(
         children: [
-
           Container(
             width: 70,
             height: 70,
-
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-
+              color: color.withOpacity(
+                  0.15),
               borderRadius:
-                  BorderRadius.circular(20),
+                  BorderRadius.circular(
+                      20),
             ),
-
             child: Icon(
               icon,
               color: color,
               size: 35,
             ),
           ),
-
           const SizedBox(width: 20),
-
           Column(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-
             crossAxisAlignment:
                 CrossAxisAlignment.start,
-
             children: [
-
               Text(
                 title,
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Colors
+                      .grey.shade600,
                   fontSize: 15,
                 ),
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(
+                  height: 8),
               Text(
                 value,
-                style: const TextStyle(
+                style:
+                    const TextStyle(
                   fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                  fontWeight:
+                      FontWeight.bold,
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class BottomItem extends StatelessWidget {
-
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const BottomItem({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.active = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-
-      child: Column(
-        mainAxisAlignment:
-            MainAxisAlignment.center,
-
-        children: [
-
-          Icon(
-            icon,
-            color: active
-                ? const Color(0xff10B981)
-                : Colors.grey,
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: active
-                  ? const Color(0xff10B981)
-                  : Colors.grey,
-            ),
           ),
         ],
       ),

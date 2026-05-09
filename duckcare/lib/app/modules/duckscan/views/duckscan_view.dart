@@ -9,77 +9,14 @@ class DuckscanView extends GetView<DuckscanController> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       backgroundColor: Colors.black,
 
-      /// BOTTOM NAVIGATION
-      bottomNavigationBar: Container(
-        height: 90,
+      /// NAVBAR
+      bottomNavigationBar: _bottomNav(),
 
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.75),
-
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(30),
-          ),
-        ),
-
-        child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.spaceAround,
-
-          children: [
-
-            BottomNavItem(
-              icon: Icons.grid_view,
-              label: "Home",
-
-              onTap: () {
-                Get.offAllNamed('/home');
-              },
-            ),
-
-            BottomNavItem(
-              icon: Icons.medical_services,
-              label: "Health",
-
-              onTap: () {
-                Get.toNamed('/duck-management');
-              },
-            ),
-
-            BottomNavItem(
-              icon:
-                  Icons.center_focus_strong,
-              label: "Scan",
-
-              active: true,
-
-              onTap: () {},
-            ),
-
-            BottomNavItem(
-              icon: Icons.analytics,
-              label: "Reports",
-
-              onTap: () {},
-            ),
-
-            BottomNavItem(
-              icon: Icons.person,
-              label: "Profile",
-
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
-
+      /// BODY
       body: Obx(() {
-
-        /// LOADING CAMERA
         if (!controller.isCameraReady.value) {
           return const Center(
             child: CircularProgressIndicator(
@@ -98,7 +35,7 @@ class DuckscanView extends GetView<DuckscanController> {
               ),
             ),
 
-            /// DARK OVERLAY
+            /// OVERLAY
             Container(
               color: Colors.black.withOpacity(0.2),
             ),
@@ -108,41 +45,30 @@ class DuckscanView extends GetView<DuckscanController> {
               top: 55,
               left: 20,
               right: 20,
-
               child: Row(
                 mainAxisAlignment:
-                    MainAxisAlignment
-                        .spaceBetween,
-
+                    MainAxisAlignment.spaceBetween,
                 children: [
 
                   const Text(
-                    "DuckScan AI",
+                    "DuckScan",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 28,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
 
                   GestureDetector(
-
-                    onTap: () {
-                      Get.back();
-                    },
-
+                    onTap: () => Get.back(),
                     child: Container(
                       width: 45,
                       height: 45,
-
                       decoration: BoxDecoration(
-                        color: Colors.white
-                            .withOpacity(0.15),
-
+                        color:
+                            Colors.white.withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
-
                       child: const Icon(
                         Icons.close,
                         color: Colors.white,
@@ -153,68 +79,36 @@ class DuckscanView extends GetView<DuckscanController> {
               ),
             ),
 
-            /// AI STATUS CARD
-            Positioned(
-              top: 120,
-              left: 20,
-
-              child: infoCard(
-                title: "AI STATUS",
-                value: "Scanning Active",
-              ),
-            ),
-
-            /// CONFIDENCE CARD
-            Positioned(
-              top: 120,
-              right: 20,
-
-              child: infoCard(
-                title: "CONFIDENCE",
-                value:
-                    controller.confidence.value,
-              ),
-            ),
-
             /// CAMERA BUTTONS
             Positioned(
               bottom: 120,
               left: 0,
               right: 0,
-
               child: Row(
                 mainAxisAlignment:
                     MainAxisAlignment.center,
-
                 children: [
 
-                  sideButton(
-                    Icons.photo_library,
-                  ),
+                  /// UPLOAD
+                  sideButton(Icons.photo_library),
 
                   const SizedBox(width: 30),
 
+                  /// CAPTURE
                   GestureDetector(
-
                     onTap: () {},
-
                     child: Container(
                       width: 90,
                       height: 90,
-
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-
                         color:
-                            const Color(
-                                0xff10B981),
-
+                            const Color(0xff10B981),
                         border: Border.all(
                           color: Colors.white24,
                           width: 8,
                         ),
                       ),
-
                       child: const Icon(
                         Icons.camera_alt,
                         color: Colors.white,
@@ -225,9 +119,8 @@ class DuckscanView extends GetView<DuckscanController> {
 
                   const SizedBox(width: 30),
 
-                  sideButton(
-                    Icons.history,
-                  ),
+                  /// SWITCH CAMERA
+                  sideButton(Icons.cameraswitch),
                 ],
               ),
             ),
@@ -237,50 +130,77 @@ class DuckscanView extends GetView<DuckscanController> {
     );
   }
 
-  /// INFO CARD
-  Widget infoCard({
-    required String title,
-    required String value,
-  }) {
-
+  /// NAVBAR
+  Widget _bottomNav() {
     return Container(
-      padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-
-        borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
-          color: Colors.white24,
-        ),
+      height: 80,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
       ),
 
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(25),
+        ),
+
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+          ),
+        ],
+      ),
+
+      child: Row(
+        mainAxisAlignment:
+            MainAxisAlignment.spaceEvenly,
 
         children: [
 
-          Text(
-            title,
-
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
+          Expanded(
+            child: _navItem(
+              icon: Icons.grid_view_rounded,
+              label: "Home",
+              onTap: () {
+                Get.offAllNamed('/home');
+              },
             ),
           ),
 
-          const SizedBox(height: 5),
+          Expanded(
+            child: _navItem(
+              icon: Icons.favorite_border_rounded,
+              label: "Health",
+              onTap: () {
+                Get.toNamed('/duck-management');
+              },
+            ),
+          ),
 
-          Text(
-            value,
+          Expanded(
+            child: _navItem(
+              icon: Icons.camera_alt_outlined,
+              label: "Scan",
+              active: true,
+              onTap: () {},
+            ),
+          ),
 
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: _navItem(
+              icon: Icons.bar_chart_rounded,
+              label: "Reports",
+              onTap: () {},
+            ),
+          ),
+
+          Expanded(
+            child: _navItem(
+              icon: Icons.person_outline_rounded,
+              label: "Profile",
+              onTap: () {},
             ),
           ),
         ],
@@ -288,9 +208,64 @@ class DuckscanView extends GetView<DuckscanController> {
     );
   }
 
+  /// NAV ITEM
+  Widget _navItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool active = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+
+      child: AnimatedContainer(
+        duration:
+            const Duration(milliseconds: 180),
+
+        height: double.infinity,
+
+        transform: Matrix4.translationValues(
+          0,
+          active ? -4 : 0,
+          0,
+        ),
+
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+
+          children: [
+
+            Icon(
+              icon,
+              size: 24,
+              color: active
+                  ? const Color(0xff10B981)
+                  : Colors.grey.shade500,
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: active
+                    ? FontWeight.w600
+                    : FontWeight.w500,
+                color: active
+                    ? const Color(0xff10B981)
+                    : Colors.grey.shade500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// SIDE BUTTON
   Widget sideButton(IconData icon) {
-
     return Container(
       width: 55,
       height: 55,
@@ -304,245 +279,6 @@ class DuckscanView extends GetView<DuckscanController> {
         icon,
         color: Colors.white,
       ),
-    );
-  }
-
-  /// DETECTION BOX
-  Widget detectionBox({
-    required String label,
-    required Color color,
-  }) {
-
-    return Container(
-      width: 140,
-      height: 170,
-
-      padding: const EdgeInsets.all(8),
-
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: color,
-          width: 3,
-        ),
-
-        borderRadius:
-            BorderRadius.circular(20),
-      ),
-
-      child: Align(
-        alignment: Alignment.topLeft,
-
-        child: Container(
-          padding:
-              const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 5,
-          ),
-
-          decoration: BoxDecoration(
-            color: color,
-
-            borderRadius:
-                BorderRadius.circular(10),
-          ),
-
-          child: Text(
-            label,
-
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight:
-                  FontWeight.bold,
-              fontSize: 11,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// SCAN CORNER
-  Widget scanCorner(Alignment alignment) {
-
-    return Align(
-      alignment: alignment,
-
-      child: Container(
-        width: 40,
-        height: 40,
-
-        decoration: BoxDecoration(
-          border: Border(
-
-            top: alignment ==
-                        Alignment.topLeft ||
-                    alignment ==
-                        Alignment.topRight
-                ? const BorderSide(
-                    color:
-                        Color(0xff10B981),
-                    width: 5,
-                  )
-                : BorderSide.none,
-
-            bottom: alignment ==
-                        Alignment.bottomLeft ||
-                    alignment ==
-                        Alignment.bottomRight
-                ? const BorderSide(
-                    color:
-                        Color(0xff10B981),
-                    width: 5,
-                  )
-                : BorderSide.none,
-
-            left: alignment ==
-                        Alignment.topLeft ||
-                    alignment ==
-                        Alignment.bottomLeft
-                ? const BorderSide(
-                    color:
-                        Color(0xff10B981),
-                    width: 5,
-                  )
-                : BorderSide.none,
-
-            right: alignment ==
-                        Alignment.topRight ||
-                    alignment ==
-                        Alignment.bottomRight
-                ? const BorderSide(
-                    color:
-                        Color(0xff10B981),
-                    width: 5,
-                  )
-                : BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// BOTTOM NAV ITEM
-class BottomNavItem extends StatelessWidget {
-
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const BottomNavItem({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.active = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return GestureDetector(
-
-      onTap: onTap,
-
-      child: Column(
-        mainAxisAlignment:
-            MainAxisAlignment.center,
-
-        children: [
-
-          Icon(
-            icon,
-
-            color: active
-                ? const Color(0xff10B981)
-                : Colors.white54,
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            label,
-
-            style: TextStyle(
-              color: active
-                  ? const Color(0xff10B981)
-                  : Colors.white54,
-
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// SCANNING LINE
-class ScanningLine extends StatefulWidget {
-  const ScanningLine({super.key});
-
-  @override
-  State<ScanningLine> createState() =>
-      _ScanningLineState();
-}
-
-class _ScanningLineState
-    extends State<ScanningLine>
-    with SingleTickerProviderStateMixin {
-
-  late AnimationController animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    animation = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-
-    animation.dispose();
-
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return AnimatedBuilder(
-      animation: animation,
-
-      builder: (context, child) {
-
-        return Positioned(
-          top: 300 * animation.value,
-
-          child: Container(
-            width: 280,
-            height: 3,
-
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-
-                  Colors.transparent,
-
-                  Color(0xff10B981),
-
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
