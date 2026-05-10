@@ -71,7 +71,10 @@ class HomeView extends GetView<HomeController> {
                   ),
 
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.toNamed(
+                    '/notification');
+                    },
                     icon: const Icon(
                       Icons.notifications_none,
                       size: 30,
@@ -293,7 +296,10 @@ class HomeView extends GetView<HomeController> {
               icon:
                   Icons.bar_chart_rounded,
               label: "Reports",
-              onTap: () {},
+              onTap: () {
+                Get.toNamed(
+                    '/report');
+              },
             ),
           ),
 
@@ -302,7 +308,10 @@ class HomeView extends GetView<HomeController> {
               icon: Icons
                   .person_outline_rounded,
               label: "Profile",
-              onTap: () {},
+              onTap: () {
+                Get.toNamed(
+                    '/profile');
+              },
             ),
           ),
         ],

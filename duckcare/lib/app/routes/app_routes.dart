@@ -9,6 +9,9 @@ abstract class Routes {
   static const LOGIN = _Paths.LOGIN;
   static const REGISTER = _Paths.REGISTER;
   static const DUCK_MANAGEMENT = _Paths.DUCK_MANAGEMENT;
+  static const NOTIFICATION = _Paths.NOTIFICATION;
+  static const REPORT = _Paths.REPORT;
+  static const PROFILE = _Paths.PROFILE;
 }
 
 abstract class _Paths {
@@ -20,4 +23,7 @@ abstract class _Paths {
   static const LOGIN = '/login';
   static const REGISTER = '/register';
   static const DUCK_MANAGEMENT = '/duck-management';
+  static const NOTIFICATION = '/notification';
+  static const REPORT = '/report';
+  static const PROFILE = '/profile';
 }

@@ -432,14 +432,6 @@ class LoginView extends GetView<LoginController> {
                             ),
 
                             const SizedBox(width: 16),
-
-                            Expanded(
-                              child: socialButton(
-                                icon: Icons.apple,
-                                label:
-                                    "Apple",
-                              ),
-                            ),
                           ],
                         ),
                       ],

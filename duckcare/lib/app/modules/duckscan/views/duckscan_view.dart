@@ -184,7 +184,8 @@ class DuckscanView extends GetView<DuckscanController> {
               icon: Icons.camera_alt_outlined,
               label: "Scan",
               active: true,
-              onTap: () {},
+              onTap: () {Get.toNamed('/scan');
+              },
             ),
           ),
 
@@ -192,7 +193,8 @@ class DuckscanView extends GetView<DuckscanController> {
             child: _navItem(
               icon: Icons.bar_chart_rounded,
               label: "Reports",
-              onTap: () {},
+              onTap: () {Get.toNamed('/report');
+              },
             ),
           ),
 
@@ -200,7 +202,8 @@ class DuckscanView extends GetView<DuckscanController> {
             child: _navItem(
               icon: Icons.person_outline_rounded,
               label: "Profile",
-              onTap: () {},
+              onTap: () {Get.toNamed('/profile');
+              },
             ),
           ),
         ],
