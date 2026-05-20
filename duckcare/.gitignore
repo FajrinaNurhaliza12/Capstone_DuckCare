@@ -18,9 +18,7 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# VS Code
 #.vscode/
 
 # Flutter/Dart/Pub related
@@ -43,3 +41,31 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ─── SENSITIF - JANGAN DI PUSH ───────────────────────────
+
+# Auth provider (berisi IP lokal)
+lib/app/data/providers/auth_provider.dart
+
+# GetStorage data
+*.gs
+box/
+
+# Environment
+.env
+*.env
+
+# ─── BACKEND PHP - JANGAN DI PUSH ────────────────────────
+
+# Folder vendor composer
+**/vendor/
+composer.lock
+
+# File konfigurasi sensitif PHP
+**/config/db.php
+**/helpers/otp_helper.php
+**/helpers/jwt_helper.php
+**/config/env.php
+
+# File test (tidak perlu di push)
+**/test_mail.php

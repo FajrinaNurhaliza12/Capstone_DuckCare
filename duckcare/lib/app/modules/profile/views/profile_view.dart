@@ -6,25 +6,21 @@ import '../controllers/profile_controller.dart';
 //  Color palette
 // ─────────────────────────────────────────────
 class _C {
-  static const primary           = Color(0xFF006c49);
-  static const primaryContainer  = Color(0xFF10b981);
-  static const emerald50         = Color(0xFFECFDF5);
-  static const emerald100        = Color(0xFFD1FAE5);
-  static const emerald500        = Color(0xFF10B981);
-  static const emerald600        = Color(0xFF059669);
-  static const surface           = Color(0xFFF9F9FF);
-  static const onSurface         = Color(0xFF151C27);
-  static const onSurfaceVariant  = Color(0xFF3C4A42);
-  static const slate50           = Color(0xFFF8FAFC);
-  static const slate100          = Color(0xFFF1F5F9);
-  static const slate200          = Color(0xFFE2E8F0);
-  static const slate400          = Color(0xFF94A3B8);
-  static const slate500          = Color(0xFF64748B);
-  static const errorContainer    = Color(0xFFFFDAD6);
-  static const onErrorContainer  = Color(0xFF93000A);
-  static const amber100          = Color(0xFFFEF3C7);
-  static const blue100           = Color(0xFFDBEAFE);
-  static const blue700           = Color(0xFF1D4ED8);
+  static const primary          = Color(0xFF006c49);
+  static const primaryContainer = Color(0xFF10b981);
+  static const emerald50        = Color(0xFFECFDF5);
+  static const emerald100       = Color(0xFFD1FAE5);
+  static const emerald500       = Color(0xFF10B981);
+  static const emerald600       = Color(0xFF059669);
+  static const surface          = Color(0xFFF9F9FF);
+  static const onSurface        = Color(0xFF151C27);
+  static const onSurfaceVariant = Color(0xFF3C4A42);
+  static const slate50          = Color(0xFFF8FAFC);
+  static const slate100         = Color(0xFFF1F5F9);
+  static const slate200         = Color(0xFFE2E8F0);
+  static const slate400         = Color(0xFF94A3B8);
+  static const blue100          = Color(0xFFDBEAFE);
+  static const blue700          = Color(0xFF1D4ED8);
 }
 
 // ─────────────────────────────────────────────
@@ -67,10 +63,7 @@ class ProfileView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _C.surface,
-
-      /// BOTTOM NAVIGATION
       bottomNavigationBar: _bottomNav(),
-
       body: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(
@@ -106,26 +99,20 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  /// APP BAR
+  // ─── APP BAR ────────────────────────────────────────
   Widget _appBar() {
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.7),
-        border: Border(
-            bottom: BorderSide(color: Colors.white.withOpacity(0.3))),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.04), blurRadius: 12)
-        ],
+        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.3))),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12)],
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
-            width: 40,
-            height: 40,
+            width: 40, height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _C.primaryContainer,
@@ -141,7 +128,6 @@ class ProfileView extends GetView<ProfileController> {
             ),
           ),
           const SizedBox(width: 12),
-          // Brand
           const Text(
             'DuckCare',
             style: TextStyle(
@@ -157,69 +143,33 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  /// NAVBAR
+  // ─── BOTTOM NAV ─────────────────────────────────────
   Widget _bottomNav() {
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(25),
-        ),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            color: Colors.black.withOpacity(0.04),
-          ),
-        ],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+        boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.04))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(
-            child: _navItem(
-              icon: Icons.grid_view_rounded,
-              label: "Home",
-              onTap: () => Get.toNamed('/home'),
-            ),
-          ),
-          Expanded(
-            child: _navItem(
-              icon: Icons.favorite_border_rounded,
-              label: "Health",
-              onTap: () => Get.toNamed('/duck-management'),
-            ),
-          ),
-          Expanded(
-            child: _navItem(
-              icon: Icons.camera_alt_outlined,
-              label: "Scan",
-              onTap: () => Get.toNamed('/duckscan'),
-            ),
-          ),
-          Expanded(
-            child: _navItem(
-              icon: Icons.bar_chart_rounded,
-              label: "Reports",
-              onTap: () => Get.toNamed('/report'),
-            ),
-          ),
-          Expanded(
-            child: _navItem(
-              icon: Icons.person_outline_rounded,
-              label: "Profile",
-              active: true,
-              onTap: () {},
-            ),
-          ),
+          Expanded(child: _navItem(icon: Icons.grid_view_rounded,       label: 'Home',    onTap: () => Get.toNamed('/home'))),
+          Expanded(child: _navItem(icon: Icons.favorite_border_rounded,  label: 'Health',  onTap: () => Get.toNamed('/duck-management'))),
+          Expanded(child: _navItem(icon: Icons.camera_alt_outlined,      label: 'Scan',    onTap: () => Get.toNamed('/duckscan'))),
+          Expanded(child: _navItem(icon: Icons.bar_chart_rounded,        label: 'Reports', onTap: () => Get.toNamed('/report'))),
+          Expanded(child: _navItem(icon: Icons.person_outline_rounded,   label: 'Profile', active: true, onTap: () {})),
         ],
       ),
     );
   }
 }
 
-/// NAV ITEM
+// ─────────────────────────────────────────────
+//  Nav Item
+// ─────────────────────────────────────────────
 Widget _navItem({
   required IconData icon,
   required String label,
@@ -235,25 +185,15 @@ Widget _navItem({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 24,
-            color: active
-                ? const Color(0xff10B981)
-                : Colors.grey.shade500,
-          ),
+          Icon(icon, size: 24,
+              color: active ? const Color(0xff10B981) : Colors.grey.shade500),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight:
-                  active ? FontWeight.w600 : FontWeight.w500,
-              color: active
-                  ? const Color(0xff10B981)
-                  : Colors.grey.shade500,
-            ),
-          ),
+          Text(label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                color: active ? const Color(0xff10B981) : Colors.grey.shade500,
+              )),
         ],
       ),
     ),
@@ -274,16 +214,14 @@ class _ProfileHeader extends StatelessWidget {
         Stack(
           children: [
             Container(
-              width: 110,
-              height: 110,
+              width: 110, height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: _C.emerald100, width: 4),
                 boxShadow: [
                   BoxShadow(
                     color: _C.emerald500.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
+                    blurRadius: 20, offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -293,33 +231,24 @@ class _ProfileHeader extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: _C.slate100,
-                    child: const Icon(Icons.person,
-                        size: 50, color: _C.slate400),
+                    child: const Icon(Icons.person, size: 50, color: _C.slate400),
                   ),
                 ),
               ),
             ),
             Positioned(
-              bottom: 4,
-              right: 4,
+              bottom: 4, right: 4,
               child: GestureDetector(
                 onTap: controller.editProfile,
                 child: Container(
-                  width: 32,
-                  height: 32,
+                  width: 32, height: 32,
                   decoration: BoxDecoration(
                     color: _C.primary,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _C.primary.withOpacity(0.3),
-                        blurRadius: 8,
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: _C.primary.withOpacity(0.3), blurRadius: 8)],
                   ),
-                  child: const Icon(Icons.edit_rounded,
-                      size: 16, color: Colors.white),
+                  child: const Icon(Icons.edit_rounded, size: 16, color: Colors.white),
                 ),
               ),
             ),
@@ -331,11 +260,9 @@ class _ProfileHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.store_rounded,
-                size: 14, color: _C.onSurfaceVariant),
+            const Icon(Icons.store_rounded, size: 14, color: _C.onSurfaceVariant),
             const SizedBox(width: 4),
-            Text('Farm: ${controller.farmName}',
-                style: _T.bodyMd()),
+            Text('Farm: ${controller.farmName}', style: _T.bodyMd()),
           ],
         ),
       ],
@@ -344,7 +271,7 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-//  Menu Section (Edit Profile only)
+//  Menu Section
 // ─────────────────────────────────────────────
 class _MenuSection extends StatelessWidget {
   final ProfileController controller;
@@ -352,13 +279,33 @@ class _MenuSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MenuCard(
-      icon: Icons.person_rounded,
-      iconBg: _C.emerald50,
-      iconColor: _C.primary,
-      title: 'Edit Profile',
-      subtitle: 'Update your account information',
-      onTap: controller.editProfile,
+    return Column(
+      children: [
+        _MenuCard(
+          icon: Icons.person_rounded,
+          iconBg: _C.emerald50,
+          iconColor: _C.primary,
+          title: 'Edit Profile',
+          subtitle: 'Update your account information',
+          onTap: controller.editProfile,
+        ),
+        const SizedBox(height: 12),
+        _MenuCard(
+          icon: Icons.history_rounded,
+          iconBg: _C.blue100,
+          iconColor: _C.blue700,
+          title: 'Login Activity',
+          subtitle: 'Lihat riwayat login perangkatmu',
+          onTap: () {
+            controller.loadLoginActivity();
+            Get.bottomSheet(
+              _LoginActivitySheet(controller: controller),
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -391,22 +338,14 @@ class _MenuCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withOpacity(0.25)),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4)),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: iconBg,
-                shape: BoxShape.circle,
-              ),
+              width: 48, height: 48,
+              decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(width: 16),
@@ -420,10 +359,144 @@ class _MenuCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                color: _C.slate400, size: 22),
+            const Icon(Icons.chevron_right_rounded, color: _C.slate400, size: 22),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Login Activity Bottom Sheet
+// ─────────────────────────────────────────────
+class _LoginActivitySheet extends StatelessWidget {
+  final ProfileController controller;
+  const _LoginActivitySheet({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40, height: 4,
+            decoration: BoxDecoration(
+              color: _C.slate200,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: _C.blue100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.history_rounded, color: _C.blue700, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Login Activity', style: _T.h2()),
+                    Text('Riwayat 20 login terakhir', style: _T.bodySm()),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // List
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoadingAct.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: _C.primary),
+                );
+              }
+              if (controller.activities.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.history_rounded, size: 48, color: _C.slate400),
+                      const SizedBox(height: 12),
+                      Text('Belum ada riwayat login', style: _T.bodyMd()),
+                    ],
+                  ),
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: controller.activities.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (_, i) {
+                  final act = Map<String, dynamic>.from(controller.activities[i]);
+                  return Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _C.slate50,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: _C.slate200),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: _C.emerald50,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            act['platform'] == 'ios'
+                                ? Icons.phone_iphone_rounded
+                                : Icons.phone_android_rounded,
+                            color: _C.primary, size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(act['device'] ?? 'Unknown Device', style: _T.h3()),
+                              const SizedBox(height: 2),
+                              Text('IP: ${act['ip_address'] ?? '-'}', style: _T.bodySm()),
+                              Text(act['login_at'] ?? '', style: _T.bodySm(color: _C.slate400)),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _C.emerald50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            act['status'] ?? '-',
+                            style: _T.bodySm(color: _C.primary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -483,33 +556,23 @@ class _StatMini extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.25)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(),
-              style: _T.labelCaps()),
+          Text(label.toUpperCase(), style: _T.labelCaps()),
           const SizedBox(height: 10),
           if (isStatus)
             Row(
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
+                  width: 8, height: 8,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                 ),
                 const SizedBox(width: 6),
-                Text(value,
-                    style: _T.h3(color: _C.onSurface)),
+                Text(value, style: _T.h3(color: _C.onSurface)),
               ],
             )
           else
@@ -538,26 +601,21 @@ class _LogoutButton extends StatelessWidget {
           color: const Color(0xFFFFDAD6),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(
-              color: Colors.red.withOpacity(0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
+            BoxShadow(color: Colors.red.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 4)),
           ],
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.logout_rounded,
-                color: Color(0xFF93000A), size: 20),
-            const SizedBox(width: 10),
+            Icon(Icons.logout_rounded, color: Color(0xFF93000A), size: 20),
+            SizedBox(width: 10),
             Text(
               'Sign Out',
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF93000A),
+                color: Color(0xFF93000A),
               ),
             ),
           ],

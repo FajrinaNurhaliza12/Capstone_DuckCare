@@ -2,58 +2,68 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import '../../../data/providers/auth_provider.dart';
+import '../../../routes/app_pages.dart';
+
 class LoginController extends GetxController {
 
-  final emailController = TextEditingController();
+  final emailController    = TextEditingController();
   final passwordController = TextEditingController();
 
-  RxBool isHidden = true.obs;
+  RxBool isHidden  = true.obs;
+  RxBool isLoading = false.obs;
 
-  final box = GetStorage();
+  final _provider = AuthProvider();
+  final _box      = GetStorage();
 
-  void togglePassword() {
-    isHidden.value = !isHidden.value;
-  }
+  void togglePassword() => isHidden.value = !isHidden.value;
 
-  void login() {
-
-    final email = emailController.text.trim();
+  Future<void> login() async {
+    final email    = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    // 🔴 VALIDASI 1: kosong
     if (email.isEmpty || password.isEmpty) {
-      Get.snackbar(
-        "Peringatan",
-        "Email dan Password wajib diisi",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      _snack('Peringatan', 'Email dan password wajib diisi', Colors.orange);
+      return;
+    }
+    if (!GetUtils.isEmail(email)) {
+      _snack('Peringatan', 'Format email tidak valid', Colors.orange);
       return;
     }
 
-    // 🔴 VALIDASI 2: format email
-    if (!email.contains("@")) {
-      Get.snackbar(
-        "Peringatan",
-        "Format email tidak valid",
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
+    isLoading.value = true;
+    try {
+      final res = await _provider.login(
+        email:    email,
+        password: password,
       );
-      return;
+
+      print('=== LOGIN DEBUG ===');
+      print('BODY: $res');
+      print('==================');
+
+      if (res['success'] == true) {
+        _box.write('pending_email', email);
+        _box.write('otp_type', 'login');
+        Get.toNamed(Routes.OTP);
+      } else {
+        _snack('Gagal', res['message'], Colors.red);
+      }
+    } catch (e) {
+      print('ERROR LOGIN: $e');
+      _snack('Error', '$e', Colors.red);
+    } finally {
+      isLoading.value = false;
     }
+  }
 
-    // 🔵 SIMULASI LOGIN BERHASIL
-    box.write('isLogin', true);
-
+  void _snack(String title, String msg, Color color) {
     Get.snackbar(
-      "Success",
-      "Login berhasil",
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
+      title, msg,
+      backgroundColor: color,
+      colorText:       Colors.white,
+      snackPosition:   SnackPosition.BOTTOM,
     );
-
-    // masuk home
-    Get.offAllNamed('/home');
   }
 
   @override
