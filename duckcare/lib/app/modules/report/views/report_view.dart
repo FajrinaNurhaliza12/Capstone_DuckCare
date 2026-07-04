@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../controllers/report_controller.dart';
 import '../../../data/models/report_model.dart';
 
@@ -26,47 +27,147 @@ class _T {
   static const _display = TextStyle(fontFamily: 'SpaceGrotesk');
   static const _body = TextStyle(fontFamily: 'Inter');
 
-  static TextStyle stat({double size = 28, Color color = _C.onSurface}) =>
-      _display.copyWith(
-        fontSize: size,
-        fontWeight: FontWeight.w700,
-        color: color,
-        height: 1,
-      );
+  static TextStyle stat({double size = 28, Color color = _C.onSurface}) {
+    return _display.copyWith(
+      fontSize: size,
+      fontWeight: FontWeight.w700,
+      color: color,
+      height: 1,
+    );
+  }
 
-  static TextStyle h1({Color color = _C.onSurface}) => _display.copyWith(
-    fontSize: 22,
-    fontWeight: FontWeight.w600,
-    color: color,
-  );
+  static TextStyle h1({Color color = _C.onSurface}) {
+    return _display.copyWith(
+      fontSize: 22,
+      fontWeight: FontWeight.w600,
+      color: color,
+    );
+  }
 
-  static TextStyle h2({Color color = _C.onSurface}) => _display.copyWith(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: color,
-  );
+  static TextStyle h2({Color color = _C.onSurface}) {
+    return _display.copyWith(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: color,
+    );
+  }
 
-  static TextStyle h3({Color color = _C.onSurface}) => _display.copyWith(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: color,
-  );
+  static TextStyle h3({Color color = _C.onSurface}) {
+    return _display.copyWith(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      color: color,
+    );
+  }
 
-  static TextStyle labelCaps({Color color = _C.slate500}) => _body.copyWith(
-    fontSize: 10,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.8,
-    color: color,
-  );
+  static TextStyle labelCaps({Color color = _C.slate500}) {
+    return _body.copyWith(
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.8,
+      color: color,
+    );
+  }
 
-  static TextStyle bodySm({Color color = _C.slate500}) =>
-      _body.copyWith(fontSize: 13, fontWeight: FontWeight.w400, color: color);
+  static TextStyle bodySm({Color color = _C.slate500}) {
+    return _body.copyWith(
+      fontSize: 13,
+      fontWeight: FontWeight.w400,
+      color: color,
+    );
+  }
 
-  static TextStyle bodyMd({Color color = _C.onSurface}) =>
-      _body.copyWith(fontSize: 15, fontWeight: FontWeight.w500, color: color);
+  static TextStyle bodyMd({Color color = _C.onSurface}) {
+    return _body.copyWith(
+      fontSize: 15,
+      fontWeight: FontWeight.w500,
+      color: color,
+    );
+  }
 }
 
-// ── View utama ───────────────────────────────────────────────
+// ── Helper format angka dan tanggal ──────────────────────────
+String _formatRupiahAngka(int angka) {
+  final bool negatif = angka < 0;
+  final String value = angka.abs().toString();
+
+  final String hasil = value.replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (match) => '${match[1]}.',
+  );
+
+  return negatif ? '-$hasil' : hasil;
+}
+
+String _formatHarga(int angka) {
+  return 'Rp ${_formatRupiahAngka(angka)}';
+}
+
+String _formatHargaSingkat(int angka) {
+  final bool negatif = angka < 0;
+  final int abs = angka.abs();
+
+  if (abs >= 1000) {
+    final String value = (abs / 1000).toStringAsFixed(1).replaceAll('.0', '');
+    return negatif ? '-Rp ${value}k' : 'Rp ${value}k';
+  }
+
+  return negatif ? '-Rp $abs' : 'Rp $abs';
+}
+
+String _formatTanggalUpdate(String value) {
+  if (value.isEmpty || value == '-') {
+    return '-';
+  }
+
+  final DateTime? tanggal = DateTime.tryParse(value);
+
+  if (tanggal == null) {
+    return value;
+  }
+
+  const List<String> bulan = [
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+  ];
+
+  final String hari = tanggal.day.toString().padLeft(2, '0');
+  final String namaBulan = bulan[tanggal.month];
+
+  return '$hari $namaBulan ${tanggal.year}';
+}
+
+List<TrendPoint> _ambilLabelChart(List<TrendPoint> points) {
+  if (points.length <= 6) {
+    return points;
+  }
+
+  final int lastIndex = points.length - 1;
+
+  final List<int> indexPilihan = [
+    0,
+    (lastIndex * 0.25).round(),
+    (lastIndex * 0.50).round(),
+    (lastIndex * 0.75).round(),
+    lastIndex,
+  ];
+
+  final List<int> uniqueIndex = indexPilihan.toSet().toList()..sort();
+
+  return uniqueIndex.map((index) => points[index]).toList();
+}
+
 class ReportView extends GetView<ReportController> {
   const ReportView({super.key});
 
@@ -88,16 +189,38 @@ class ReportView extends GetView<ReportController> {
             children: [
               _AppBar(controller: controller),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                  child: Column(
-                    children: [
-                      _RingkasanRow(controller: controller),
-                      const SizedBox(height: 20),
-                      _TrendChart(controller: controller),
-                      const SizedBox(height: 20),
-                      _HargaTertinggiCard(controller: controller),
-                    ],
+                child: RefreshIndicator(
+                  color: _C.emerald600,
+                  onRefresh: controller.refreshReport,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                    child: Obx(() {
+                      if (controller.isLoading.value) {
+                        return const SizedBox(
+                          height: 520,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: _C.emerald600,
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (controller.errorMessage.value.isNotEmpty) {
+                        return _ErrorReportCard(controller: controller);
+                      }
+
+                      return Column(
+                        children: [
+                          _RingkasanRow(controller: controller),
+                          const SizedBox(height: 20),
+                          _TrendChart(controller: controller),
+                          const SizedBox(height: 20),
+                          _HargaTertinggiCard(controller: controller),
+                        ],
+                      );
+                    }),
                   ),
                 ),
               ),
@@ -168,43 +291,51 @@ class ReportView extends GetView<ReportController> {
   }
 }
 
-Widget _navItem({
-  required IconData icon,
-  required String label,
-  required VoidCallback onTap,
-  bool active = false,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      height: double.infinity,
-      transform: Matrix4.translationValues(0, active ? -4 : 0, 0),
+class _ErrorReportCard extends StatelessWidget {
+  final ReportController controller;
+
+  const _ErrorReportCard({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GlassCard(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 24,
-            color: active ? const Color(0xFF10B981) : Colors.grey.shade500,
-          ),
-          const SizedBox(height: 4),
+          const Icon(Icons.error_outline_rounded, color: _C.red400, size: 38),
+          const SizedBox(height: 12),
           Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-              color: active ? const Color(0xFF10B981) : Colors.grey.shade500,
+            'Gagal memuat laporan',
+            style: _T.h2(),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            controller.errorMessage.value,
+            style: _T.bodySm(),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: controller.refreshReport,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _C.emerald600,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
+            child: const Text('Coba Lagi'),
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _AppBar extends StatelessWidget {
   final ReportController controller;
+
   const _AppBar({required this.controller});
 
   @override
@@ -237,11 +368,7 @@ class _AppBar extends StatelessWidget {
               ],
             ),
             child: ClipOval(
-              child: Image.asset(
-                // ← DIUBAH
-                'assets/images/duck.jpg',
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset('assets/images/duck.jpg', fit: BoxFit.cover),
             ),
           ),
           const SizedBox(width: 12),
@@ -270,13 +397,16 @@ class _AppBar extends StatelessWidget {
   }
 }
 
-// ── Ringkasan 3 kartu statistik ──────────────────────────────
 class _RingkasanRow extends StatelessWidget {
   final ReportController controller;
+
   const _RingkasanRow({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final double kenaikan = controller.summary?.persentaseKenaikan ?? 0;
+    final bool hargaNaik = kenaikan >= 0;
+
     return Column(
       children: [
         Row(
@@ -285,12 +415,12 @@ class _RingkasanRow extends StatelessWidget {
               child: _StatCard(
                 label: 'HARGA TERTINGGI',
                 value: controller.hargaTertinggiNasional,
-                subtitle: controller.persentaseKenaikan,
-                keterangan: controller.periodeKenaikan,
+                subtitle: 'Nasional',
+                keterangan: controller.periode,
                 icon: Icons.arrow_upward_rounded,
                 iconColor: _C.emerald500,
                 iconBg: _C.emerald50,
-                naik: true,
+                statusColor: _C.emerald600,
               ),
             ),
             const SizedBox(width: 14),
@@ -298,12 +428,12 @@ class _RingkasanRow extends StatelessWidget {
               child: _StatCard(
                 label: 'HARGA TERENDAH',
                 value: controller.hargaTerendahNasional,
-                subtitle: '-5,2%',
-                keterangan: 'vs. 30 hari lalu',
+                subtitle: 'Nasional',
+                keterangan: controller.periode,
                 icon: Icons.arrow_downward_rounded,
                 iconColor: _C.red400,
                 iconBg: const Color(0x1AF87171),
-                naik: false,
+                statusColor: _C.red400,
               ),
             ),
           ],
@@ -314,7 +444,7 @@ class _RingkasanRow extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: _C.emerald50,
                   shape: BoxShape.circle,
                 ),
@@ -325,23 +455,43 @@ class _RingkasanRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('RATA-RATA NASIONAL', style: _T.labelCaps()),
-                  const SizedBox(height: 4),
-                  Text(controller.hargaRataRata, style: _T.stat(size: 24)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('RATA-RATA NASIONAL', style: _T.labelCaps()),
+                    const SizedBox(height: 4),
+                    Text(controller.hargaRataRata, style: _T.stat(size: 24)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${controller.satuan} · ${controller.jumlahData} data',
+                      style: _T.bodySm().copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('per butir', style: _T.bodySm()),
+                  Text(
+                    hargaNaik ? 'Naik' : 'Turun',
+                    style: _T
+                        .bodySm(color: hargaNaik ? _C.emerald600 : _C.red400)
+                        .copyWith(fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 2),
                   Text(
-                    'Update: 09 Jun 2025',
-                    style: _T.bodySm().copyWith(fontSize: 11),
+                    controller.persentaseKenaikan,
+                    style: _T
+                        .bodySm(color: hargaNaik ? _C.emerald600 : _C.red400)
+                        .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Update: ${_formatTanggalUpdate(controller.updatedAt)}',
+                    style: _T.bodySm().copyWith(fontSize: 10),
+                    textAlign: TextAlign.right,
                   ),
                 ],
               ),
@@ -354,10 +504,14 @@ class _RingkasanRow extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  final String label, value, subtitle, keterangan;
+  final String label;
+  final String value;
+  final String subtitle;
+  final String keterangan;
   final IconData icon;
-  final Color iconColor, iconBg;
-  final bool naik;
+  final Color iconColor;
+  final Color iconBg;
+  final Color statusColor;
 
   const _StatCard({
     required this.label,
@@ -367,7 +521,7 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.iconBg,
-    required this.naik,
+    required this.statusColor,
   });
 
   @override
@@ -377,9 +531,15 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: Text(label, style: _T.labelCaps())),
+              Expanded(
+                child: Text(
+                  label,
+                  style: _T.labelCaps(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -391,66 +551,88 @@ class _StatCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(value, style: _T.stat(size: 20)),
+          Text(
+            value,
+            style: _T.stat(size: 20),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(
-                naik ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                color: naik ? _C.emerald600 : _C.red400,
-                size: 13,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                subtitle,
-                style: _T
-                    .bodySm(color: naik ? _C.emerald600 : _C.red400)
-                    .copyWith(fontWeight: FontWeight.w600),
+              Icon(Icons.circle, color: statusColor, size: 8),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  subtitle,
+                  style: _T
+                      .bodySm(color: statusColor)
+                      .copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
-          Text(keterangan, style: _T.bodySm().copyWith(fontSize: 11)),
+          const SizedBox(height: 2),
+          Text(
+            keterangan,
+            style: _T.bodySm().copyWith(fontSize: 11),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
   }
 }
 
-// ── Chart tren harga ─────────────────────────────────────────
 class _TrendChart extends StatelessWidget {
   final ReportController controller;
+
   const _TrendChart({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final List<TrendPoint> points = List<TrendPoint>.from(
+      controller.trendPoints,
+    );
+
+    final List<TrendPoint> labelPoints = _ambilLabelChart(points);
+
     return _GlassCard(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Tren Harga Telur', style: _T.h1()),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Pergerakan harga nasional (Rp/butir)',
-                    style: _T.bodySm(),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Tren Harga Telur', style: _T.h1()),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Pergerakan harga nasional (${controller.satuan})',
+                      style: _T.bodySm(),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 10),
               Obx(
                 () => DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: controller.selectedPeriod.value,
                     borderRadius: BorderRadius.circular(16),
                     style: _T.labelCaps(color: _C.onSurfaceVariant),
-                    items: controller.periodOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
+                    items: controller.periodOptions.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: Text(item),
+                      );
+                    }).toList(),
                     onChanged: controller.changePeriod,
                   ),
                 ),
@@ -458,49 +640,62 @@ class _TrendChart extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+
           Container(
-            height: 200,
+            height: 230,
             width: double.infinity,
             decoration: BoxDecoration(
               color: _C.surfaceContainerLow,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: _C.slate100),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: CustomPaint(
-                painter: _TrendChartPainter(points: controller.trendPoints),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: controller.trendPoints
-                            .where(
-                              (p) => controller.trendPoints.indexOf(p) % 2 == 0,
-                            )
-                            .map((p) => Text(p.label, style: _T.labelCaps()))
-                            .toList(),
-                      ),
-                    ],
+            child: points.isEmpty
+                ? Center(
+                    child: Text('Data tren belum tersedia', style: _T.bodySm()),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: _TrendChartPainter(points: points),
+                          ),
+                        ),
+                        Positioned(
+                          left: 10,
+                          right: 10,
+                          bottom: 8,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: labelPoints.map((item) {
+                              return Text(
+                                item.label,
+                                style: _T.labelCaps().copyWith(fontSize: 9),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-            ),
           ),
+
           const SizedBox(height: 20),
           const Divider(color: _C.slate100),
           const SizedBox(height: 14),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _ChartStat(label: 'Terendah', value: 'Rp 28.500'),
-              _ChartStat(label: 'Rata-rata', value: 'Rp 30.437'),
+              _ChartStat(
+                label: 'Terendah',
+                value: controller.hargaTerendahNasional,
+              ),
+              _ChartStat(label: 'Rata-rata', value: controller.hargaRataRata),
               _ChartStat(
                 label: 'Tertinggi',
-                value: 'Rp 32.500',
+                value: controller.hargaTertinggiNasional,
                 highlight: true,
               ),
             ],
@@ -512,8 +707,10 @@ class _TrendChart extends StatelessWidget {
 }
 
 class _ChartStat extends StatelessWidget {
-  final String label, value;
+  final String label;
+  final String value;
   final bool highlight;
+
   const _ChartStat({
     required this.label,
     required this.value,
@@ -522,105 +719,129 @@ class _ChartStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label.toUpperCase(), style: _T.labelCaps()),
-        const SizedBox(height: 4),
-        Text(value, style: highlight ? _T.h3(color: _C.emerald600) : _T.h3()),
-      ],
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: _T.labelCaps(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: highlight ? _T.h3(color: _C.emerald600) : _T.h3(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _TrendChartPainter extends CustomPainter {
   final List<TrendPoint> points;
+
   const _TrendChartPainter({required this.points});
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (points.isEmpty) return;
-    final chartH = size.height - 32.0;
-    final stepX = size.width / (points.length - 1);
-
-    // Grid lines
-    final gridPaint = Paint()
-      ..color = const Color(0x0D000000)
-      ..strokeWidth = 1;
-    for (int i = 1; i < 5; i++) {
-      final y = chartH * i / 5;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    if (points.isEmpty) {
+      return;
     }
 
-    // Build path
-    final path = Path();
-    final linePath = Path();
+    final double topPadding = 16;
+    final double bottomPadding = 42;
+    final double chartHeight = size.height - topPadding - bottomPadding;
+    final double chartWidth = size.width;
+
+    final double stepX = points.length == 1
+        ? 0
+        : chartWidth / (points.length - 1);
+
+    final Paint gridPaint = Paint()
+      ..color = const Color(0x0D000000)
+      ..strokeWidth = 1;
+
+    for (int i = 0; i <= 4; i++) {
+      final double y = topPadding + (chartHeight * i / 4);
+      canvas.drawLine(Offset(0, y), Offset(chartWidth, y), gridPaint);
+    }
+
+    final Path linePath = Path();
+
     for (int i = 0; i < points.length; i++) {
-      final x = i * stepX;
-      final y = chartH * (1 - points[i].value) + 8;
+      final double value = points[i].value.clamp(0.0, 1.0);
+      final double x = points.length == 1 ? chartWidth / 2 : i * stepX;
+      final double y = topPadding + chartHeight * (1 - value);
+
       if (i == 0) {
-        path.moveTo(x, y);
         linePath.moveTo(x, y);
       } else {
-        final px = (i - 1) * stepX;
-        final py = chartH * (1 - points[i - 1].value) + 8;
-        final cx = (px + x) / 2;
-        path.cubicTo(cx, py, cx, y, x, y);
-        linePath.cubicTo(cx, py, cx, y, x, y);
+        final double prevValue = points[i - 1].value.clamp(0.0, 1.0);
+        final double prevX = points.length == 1
+            ? chartWidth / 2
+            : (i - 1) * stepX;
+        final double prevY = topPadding + chartHeight * (1 - prevValue);
+        final double controlX = (prevX + x) / 2;
+
+        linePath.cubicTo(controlX, prevY, controlX, y, x, y);
       }
     }
 
-    // Fill gradient
-    final fillPath = Path.from(path)
-      ..lineTo(size.width, chartH + 8)
-      ..lineTo(0, chartH + 8)
+    final Path fillPath = Path.from(linePath)
+      ..lineTo(chartWidth, topPadding + chartHeight)
+      ..lineTo(0, topPadding + chartHeight)
       ..close();
-    canvas.drawPath(
-      fillPath,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0x4D10B981), Color(0x0010B981)],
-        ).createShader(Rect.fromLTWH(0, 0, size.width, chartH)),
-    );
 
-    // Garis
-    canvas.drawPath(
-      linePath,
-      Paint()
-        ..color = const Color(0xFF10B981)
-        ..strokeWidth = 2.5
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round,
-    );
+    final Paint fillPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0x4D10B981), Color(0x0010B981)],
+      ).createShader(Rect.fromLTWH(0, topPadding, chartWidth, chartHeight));
 
-    // Titik puncak + tooltip harga
-    final dotPaint = Paint()..color = const Color(0xFF10B981);
-    final ringPaint = Paint()
+    canvas.drawPath(fillPath, fillPaint);
+
+    final Paint linePaint = Paint()
+      ..color = const Color(0xFF10B981)
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(linePath, linePaint);
+
+    final Paint dotPaint = Paint()..color = const Color(0xFF10B981);
+
+    final Paint ringPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
     for (int i = 0; i < points.length; i++) {
-      final isPeak =
-          i == points.length - 1 ||
-          (i > 0 &&
-              points[i].value > points[i - 1].value &&
-              (i == points.length - 1 ||
-                  points[i].value > points[i + 1].value));
+      final bool isLast = i == points.length - 1;
+      final bool isFirst = i == 0;
+      final bool isPeak =
+          !isFirst &&
+          !isLast &&
+          points[i].value >= points[i - 1].value &&
+          points[i].value >= points[i + 1].value;
 
-      if (isPeak) {
-        final x = i * stepX;
-        final y = chartH * (1 - points[i].value) + 8;
+      if (isFirst || isLast || isPeak) {
+        final double value = points[i].value.clamp(0.0, 1.0);
+        final double x = points.length == 1 ? chartWidth / 2 : i * stepX;
+        final double y = topPadding + chartHeight * (1 - value);
+
         canvas.drawCircle(Offset(x, y), 5, dotPaint);
+
         canvas.drawCircle(Offset(x, y), 5, ringPaint);
 
-        // Label harga di atas titik
-        final label = 'Rp ${(points[i].hargaAsli / 1000).toStringAsFixed(1)}k';
-        final tp = TextPainter(
+        final TextPainter textPainter = TextPainter(
           text: TextSpan(
-            text: label,
+            text: _formatHargaSingkat(points[i].hargaAsli),
             style: const TextStyle(
               color: Color(0xFF059669),
               fontSize: 9,
@@ -630,50 +851,67 @@ class _TrendChartPainter extends CustomPainter {
           ),
           textDirection: TextDirection.ltr,
         )..layout();
-        tp.paint(canvas, Offset(x - tp.width / 2, y - 18));
+
+        double labelX = x - textPainter.width / 2;
+
+        if (labelX < 4) {
+          labelX = 4;
+        }
+
+        if (labelX + textPainter.width > chartWidth - 4) {
+          labelX = chartWidth - textPainter.width - 4;
+        }
+
+        textPainter.paint(canvas, Offset(labelX, y - 18));
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
+  bool shouldRepaint(covariant _TrendChartPainter oldDelegate) {
+    return oldDelegate.points != points;
+  }
 }
 
-// ── Tabel harga tertinggi per wilayah ────────────────────────
 class _HargaTertinggiCard extends StatelessWidget {
   final ReportController controller;
+
   const _HargaTertinggiCard({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final List<EggPriceEntry> dataHarga = controller.hargaTertinggi;
+
     return _GlassCard(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Update Harga Tertinggi', style: _T.h2()),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Harga terbaru per wilayah hari ini',
-                    style: _T.bodySm(),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Update Harga Tertinggi', style: _T.h2()),
+                    const SizedBox(height: 2),
+                    Text('Harga terbaru per wilayah', style: _T.bodySm()),
+                  ],
+                ),
               ),
+              const SizedBox(width: 10),
               Obx(
                 () => DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: controller.selectedWilayah.value,
                     borderRadius: BorderRadius.circular(16),
                     style: _T.labelCaps(color: _C.onSurfaceVariant),
-                    items: controller.wilayahOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
+                    items: controller.wilayahOptions.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: Text(item),
+                      );
+                    }).toList(),
                     onChanged: controller.changeWilayah,
                   ),
                 ),
@@ -682,7 +920,6 @@ class _HargaTertinggiCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Header tabel
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -725,153 +962,188 @@ class _HargaTertinggiCard extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(height: 8),
 
-          // Baris data
-          ...controller.hargaTertinggi.asMap().entries.map((entry) {
-            final i = entry.key;
-            final item = entry.value;
-            final isTop = i == 0;
+          if (dataHarga.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'Data harga wilayah belum tersedia',
+                  style: _T.bodySm(),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          else
+            ...dataHarga.asMap().entries.map((entry) {
+              final int index = entry.key;
+              final EggPriceEntry item = entry.value;
+              final bool isTop = index == 0;
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                color: isTop
-                    ? _C.emerald500.withOpacity(0.06)
-                    : (i.isEven
-                          ? Colors.transparent
-                          : _C.slate100.withOpacity(0.4)),
-                borderRadius: BorderRadius.circular(10),
-                border: isTop
-                    ? Border.all(color: _C.emerald500.withOpacity(0.2))
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  // Wilayah + badge tertinggi
-                  Expanded(
-                    flex: 3,
-                    child: Row(
-                      children: [
-                        if (isTop) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _C.emerald500,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'No.1',
-                              style: _T
-                                  .labelCaps(color: Colors.white)
-                                  .copyWith(fontSize: 9),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        Flexible(
-                          child: Text(
-                            item.wilayah,
-                            style: isTop
-                                ? _T
-                                      .bodyMd(color: _C.emerald600)
-                                      .copyWith(fontWeight: FontWeight.w700)
-                                : _T.bodyMd(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Harga
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'Rp ${_formatRupiah(item.harga)}',
-                      style: _T
-                          .bodyMd(color: isTop ? _C.emerald600 : _C.onSurface)
-                          .copyWith(fontWeight: FontWeight.w700),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                  // Perubahan
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Icon(
-                          item.selisih > 0
-                              ? Icons.arrow_drop_up_rounded
-                              : item.selisih < 0
-                              ? Icons.arrow_drop_down_rounded
-                              : Icons.remove_rounded,
-                          color: item.selisih > 0
-                              ? _C.emerald500
-                              : item.selisih < 0
-                              ? _C.red400
-                              : _C.slate500,
-                          size: 18,
-                        ),
-                        Text(
-                          item.selisih == 0
-                              ? 'Tetap'
-                              : '${item.selisih > 0 ? '+' : ''}${_formatRupiah(item.selisih)}',
-                          style: _T
-                              .bodySm(
-                                color: item.selisih > 0
-                                    ? _C.emerald600
-                                    : item.selisih < 0
-                                    ? _C.red400
-                                    : _C.slate500,
-                              )
-                              .copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Tanggal
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      item.tanggal,
-                      style: _T.bodySm().copyWith(fontSize: 11),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+              return _HargaWilayahRow(item: item, index: index, isTop: isTop);
+            }),
 
           const SizedBox(height: 16),
+
           Center(
             child: Text(
-              'Sumber: Data Pasar Nasional · Diperbarui 09 Jun 2025',
+              'Sumber: ${controller.sumber} · Update ${_formatTanggalUpdate(controller.updatedAt)}',
               style: _T.bodySm().copyWith(fontSize: 10),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  String _formatRupiah(int angka) {
-    final abs = angka.abs();
-    if (abs >= 1000) {
-      return '${(abs / 1000).toStringAsFixed(0)}.${(abs % 1000).toString().padLeft(3, '0')}';
-    }
-    return abs.toString();
+class _HargaWilayahRow extends StatelessWidget {
+  final EggPriceEntry item;
+  final int index;
+  final bool isTop;
+
+  const _HargaWilayahRow({
+    required this.item,
+    required this.index,
+    required this.isTop,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isNaik = item.selisih > 0;
+    final bool isTurun = item.selisih < 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: isTop
+            ? _C.emerald500.withOpacity(0.06)
+            : index.isEven
+            ? Colors.transparent
+            : _C.slate100.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(10),
+        border: isTop
+            ? Border.all(color: _C.emerald500.withOpacity(0.2))
+            : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                if (isTop) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _C.emerald500,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'No.1',
+                      style: _T
+                          .labelCaps(color: Colors.white)
+                          .copyWith(fontSize: 9),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Flexible(
+                  child: Text(
+                    item.wilayah,
+                    style: isTop
+                        ? _T
+                              .bodyMd(color: _C.emerald600)
+                              .copyWith(fontWeight: FontWeight.w700)
+                        : _T.bodyMd(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            flex: 2,
+            child: Text(
+              _formatHarga(item.harga),
+              style: _T
+                  .bodyMd(color: isTop ? _C.emerald600 : _C.onSurface)
+                  .copyWith(fontWeight: FontWeight.w700),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          Expanded(
+            flex: 2,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(
+                  isNaik
+                      ? Icons.arrow_drop_up_rounded
+                      : isTurun
+                      ? Icons.arrow_drop_down_rounded
+                      : Icons.remove_rounded,
+                  color: isNaik
+                      ? _C.emerald500
+                      : isTurun
+                      ? _C.red400
+                      : _C.slate500,
+                  size: 18,
+                ),
+                Flexible(
+                  child: Text(
+                    item.selisih == 0
+                        ? 'Tetap'
+                        : '${isNaik ? '+' : '-'}${_formatHarga(item.selisih.abs())}',
+                    style: _T
+                        .bodySm(
+                          color: isNaik
+                              ? _C.emerald600
+                              : isTurun
+                              ? _C.red400
+                              : _C.slate500,
+                        )
+                        .copyWith(fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            flex: 2,
+            child: Text(
+              item.tanggal,
+              style: _T.bodySm().copyWith(fontSize: 11),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-// ── Glass card bersama ───────────────────────────────────────
 class _GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
+
   const _GlassCard({required this.child, this.padding});
 
   @override

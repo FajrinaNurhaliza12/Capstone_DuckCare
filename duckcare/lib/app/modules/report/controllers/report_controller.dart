@@ -2,11 +2,17 @@ import 'package:get/get.dart';
 
 import '../../../data/models/report_model.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/report_provider.dart';
 
 class ReportController extends GetxController {
+  final ReportProvider _reportProvider = ReportProvider();
   final AuthProvider _authProvider = AuthProvider();
 
-  // ── Reactive state ──────────────────────────────
+  final RxBool isLoading = false.obs;
+  final RxString errorMessage = ''.obs;
+
+  final Rxn<ReportModel> report = Rxn<ReportModel>();
+
   final RxString selectedPeriod = '30 Hari Terakhir'.obs;
   final RxString selectedWilayah = 'Semua Wilayah'.obs;
 
@@ -16,110 +22,205 @@ class ReportController extends GetxController {
     '3 Bulan Terakhir',
   ];
 
-  final List<String> wilayahOptions = [
+  final RxList<String> wilayahOptions = <String>[
     'Semua Wilayah',
-    'Jawa Tengah',
-    'Jawa Timur',
-    'Jawa Barat',
-    'Sumatera',
-  ];
+  ].obs;
+
+  final RxList<EggPriceEntry> hargaTertinggi = <EggPriceEntry>[].obs;
+  final RxList<TrendPoint> trendPoints = <TrendPoint>[].obs;
 
   @override
   void onInit() {
     super.onInit();
+
+    loadReport();
 
     _recordActivity(
       action: 'VIEW_REPORT',
       detail: 'User membuka halaman laporan',
     );
   }
-
-  Future<void> _recordActivity({
-    required String action,
-    String detail = '',
-  }) async {
+    Future<void> loadReport() async {
     try {
-      await _authProvider.recordActivity(
-        action: action,
-        detail: detail,
-      );
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final response = await _reportProvider.getReport();
+
+      final success = response['success'] == true;
+
+      if (!success) {
+        errorMessage.value =
+            response['message']?.toString() ?? 'Gagal mengambil data report';
+        return;
+      }
+
+      final data = response['data'];
+
+      if (data is! Map<String, dynamic>) {
+        errorMessage.value = 'Format data report tidak valid';
+        return;
+      }
+
+      final reportData = ReportModel.fromJson(data);
+
+      report.value = reportData;
+
+      _setWilayahOptions(reportData);
+      _setTrendPoints(reportData);
+      _setHargaTertinggi(reportData);
     } catch (e) {
-      print('REPORT RECORD ACTIVITY ERROR: $e');
+      errorMessage.value = 'Terjadi kesalahan saat mengambil report: $e';
+    } finally {
+      isLoading.value = false;
     }
   }
-    // ── Data harga tertinggi per wilayah ────────────
-  final List<EggPriceEntry> hargaTertinggi = const [
-    EggPriceEntry(
-      tanggal: '09 Jun 2025',
-      wilayah: 'Jawa Timur',
-      harga: 32500,
-      hargaSebelumnya: 31000,
-    ),
-    EggPriceEntry(
-      tanggal: '09 Jun 2025',
-      wilayah: 'Jawa Tengah',
-      harga: 31800,
-      hargaSebelumnya: 32200,
-    ),
-    EggPriceEntry(
-      tanggal: '09 Jun 2025',
-      wilayah: 'Jawa Barat',
-      harga: 31200,
-      hargaSebelumnya: 30500,
-    ),
-    EggPriceEntry(
-      tanggal: '09 Jun 2025',
-      wilayah: 'Sumatera',
-      harga: 30800,
-      hargaSebelumnya: 30800,
-    ),
-    EggPriceEntry(
-      tanggal: '09 Jun 2025',
-      wilayah: 'Sulawesi',
-      harga: 30200,
-      hargaSebelumnya: 29800,
-    ),
-  ];
+    void _setWilayahOptions(ReportModel reportData) {
+    wilayahOptions.clear();
 
-  // ── Data chart trend ────────────────────────────
-  final List<TrendPoint> trendPoints = const [
-    TrendPoint(label: '13 Mei', value: 0.52, hargaAsli: 28500),
-    TrendPoint(label: '17 Mei', value: 0.60, hargaAsli: 29200),
-    TrendPoint(label: '21 Mei', value: 0.55, hargaAsli: 28800),
-    TrendPoint(label: '25 Mei', value: 0.72, hargaAsli: 30400),
-    TrendPoint(label: '29 Mei', value: 0.68, hargaAsli: 30000),
-    TrendPoint(label: '02 Jun', value: 0.80, hargaAsli: 31200),
-    TrendPoint(label: '06 Jun', value: 0.88, hargaAsli: 31900),
-    TrendPoint(label: '09 Jun', value: 0.95, hargaAsli: 32500),
-  ];
-
-  // ── Ringkasan statistik ─────────────────────────
-  String get hargaRataRata => 'Rp 30.437';
-  String get hargaTertinggiNasional => 'Rp 32.500';
-  String get hargaTerendahNasional => 'Rp 28.500';
-  String get persentaseKenaikan => '+14,0%';
-  String get periodeKenaikan => 'vs. 30 hari lalu';
-
-  // ── Actions ─────────────────────────────────────
-  void changePeriod(String? value) {
-    if (value != null) {
-      selectedPeriod.value = value;
-
-      _recordActivity(
-        action: 'FILTER_REPORT_PERIOD',
-        detail: 'User mengubah periode laporan menjadi $value',
-      );
+    if (reportData.wilayahOptions.isEmpty) {
+      wilayahOptions.add('Semua Wilayah');
+    } else {
+      wilayahOptions.addAll(reportData.wilayahOptions);
     }
+
+    if (!wilayahOptions.contains(selectedWilayah.value)) {
+      selectedWilayah.value = 'Semua Wilayah';
+    }
+  }
+
+  void _setTrendPoints(ReportModel reportData) {
+    trendPoints.clear();
+
+    final mappedTrend = reportData.trend.map((item) {
+      return TrendPoint(
+        label: item.label,
+        value: item.value,
+        hargaAsli: item.hargaAsli,
+      );
+    }).toList();
+
+    trendPoints.addAll(mappedTrend);
+  }
+
+  void _setHargaTertinggi(ReportModel reportData) {
+    hargaTertinggi.clear();
+
+    final mappedHarga = reportData.hargaTertinggi.map((item) {
+      return EggPriceEntry(
+        tanggal: item.tanggal,
+        wilayah: item.wilayah,
+        harga: item.harga,
+        hargaSebelumnya: item.hargaSebelumnya,
+      );
+    }).toList();
+
+    hargaTertinggi.addAll(mappedHarga);
+  }
+    void changePeriod(String? value) {
+    if (value == null || value.isEmpty) return;
+
+    selectedPeriod.value = value;
+    loadReport();
   }
 
   void changeWilayah(String? value) {
-    if (value != null) {
-      selectedWilayah.value = value;
+    if (value == null || value.isEmpty) return;
 
-      _recordActivity(
-        action: 'FILTER_REPORT_REGION',
-        detail: 'User mengubah wilayah laporan menjadi $value',
-      );
-    }
+    selectedWilayah.value = value;
   }
-} 
+
+  Future<void> refreshReport() async {
+    await loadReport();
+  }
+
+  String formatRupiah(int value) {
+    return 'Rp ${value.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]}.',
+        )}';
+  }
+
+  String formatPersen(double value) {
+    if (value > 0) {
+      return '+${value.toStringAsFixed(1)}%';
+    }
+
+    return '${value.toStringAsFixed(1)}%';
+  }
+
+    ReportSummary? get summary => report.value?.summary;
+
+  String get hargaTerakhir {
+    return formatRupiah(summary?.hargaTerakhir ?? 0);
+  }
+
+  String get hargaSebelumnya {
+    return formatRupiah(summary?.hargaSebelumnya ?? 0);
+  }
+
+  String get hargaRataRata {
+    return formatRupiah(summary?.hargaRataRata ?? 0);
+  }
+
+  String get hargaTertinggiNasional {
+    return formatRupiah(summary?.hargaTertinggiNasional ?? 0);
+  }
+
+  String get hargaTerendahNasional {
+    return formatRupiah(summary?.hargaTerendahNasional ?? 0);
+  }
+
+  String get persentaseKenaikan {
+    return formatPersen(summary?.persentaseKenaikan ?? 0);
+  }
+
+  String get periodeKenaikan {
+    return 'vs. 30 hari lalu';
+  }
+
+    double get indeks {
+    return summary?.indeks ?? 0;
+  }
+
+  double get volatilitasPct {
+    return summary?.volatilitasPct ?? 0;
+  }
+
+  int get jumlahData {
+    return summary?.jumlahData ?? 0;
+  }
+
+  String get updatedAt {
+    return report.value?.updatedAt ?? '-';
+  }
+
+  String get sumber {
+    return report.value?.sumber ?? '-';
+  }
+
+  String get satuan {
+    return report.value?.satuan ?? 'Rp/kg';
+  }
+
+  String get periode {
+    return report.value?.periode ?? '-';
+  }
+
+  bool get hasData {
+    return report.value != null;
+  }
+
+  void _recordActivity({
+    required String action,
+    required String detail,
+  }) {
+    try {
+      print('REPORT ACTIVITY: $action - $detail');
+
+      // Kalau nanti AuthProvider kamu punya fitur simpan log aktivitas,
+      // bagian ini bisa disambungkan ke API log.
+      _authProvider;
+    } catch (_) {}
+  }
+}

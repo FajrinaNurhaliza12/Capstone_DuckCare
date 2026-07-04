@@ -3,29 +3,23 @@
   "message": "Data report harga telur berhasil diperbarui",
   "code": 200,
   "data": {
-    "updated_at": "2026-06-26T05:23:28.987082",
+    "updated_at": "2026-07-04T17:52:42.109392",
     "sumber": "https://sunegg.id/indeks-harga-telur",
     "satuan": "Rp/kg",
     "periode": "30 data terakhir",
     "wilayah_aktif": "Semua Wilayah",
     "summary": {
-      "harga_terakhir": 21974,
-      "harga_sebelumnya": 23997,
-      "harga_rata_rata": 24602,
+      "harga_terakhir": 22190,
+      "harga_sebelumnya": 21974,
+      "harga_rata_rata": 24488,
       "harga_tertinggi_nasional": 25603,
       "harga_terendah_nasional": 21974,
-      "persentase_kenaikan": -14.2,
-      "indeks": 89.69,
+      "persentase_kenaikan": -13.3,
+      "indeks": 90.57,
       "volatilitas_pct": 0.0,
       "jumlah_data": 30
     },
     "trend": [
-      {
-        "tanggal": "2026-04-21",
-        "label": "21 Apr",
-        "value": 0.9,
-        "harga_asli": 25603
-      },
       {
         "tanggal": "2026-04-22",
         "label": "22 Apr",
@@ -199,32 +193,38 @@
         "label": "26 Jun",
         "value": 0.15,
         "harga_asli": 21974
+      },
+      {
+        "tanggal": "2026-07-04",
+        "label": "04 Jul",
+        "value": 0.19,
+        "harga_asli": 22190
       }
     ],
     "harga_tertinggi": [
       {
-        "tanggal": "26 Jun",
+        "tanggal": "04 Jul",
         "wilayah": "Jabar-DKI",
         "harga": 25000,
         "harga_sebelumnya": 25000,
         "selisih": 0
       },
       {
-        "tanggal": "26 Jun",
+        "tanggal": "04 Jul",
         "wilayah": "Jawa Tengah",
         "harga": 25000,
         "harga_sebelumnya": 25000,
         "selisih": 0
       },
       {
-        "tanggal": "26 Jun",
+        "tanggal": "04 Jul",
         "wilayah": "Jawa Timur",
         "harga": 25000,
         "harga_sebelumnya": 25000,
         "selisih": 0
       },
       {
-        "tanggal": "26 Jun",
+        "tanggal": "04 Jul",
         "wilayah": "Luar Jawa",
         "harga": 25000,
         "harga_sebelumnya": 25000,
