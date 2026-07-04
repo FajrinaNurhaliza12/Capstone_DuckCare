@@ -46,6 +46,8 @@ app.*.map.json
 
 # Auth provider (berisi IP lokal)
 lib/app/data/providers/auth_provider.dart
+lib/app/data/providers/duck_provider.dart
+lib/app/data/providers/schedule_rule_provider.dart
 
 # GetStorage data
 *.gs
@@ -69,3 +71,6 @@ composer.lock
 
 # File test (tidak perlu di push)
 **/test_mail.php
+
+# Big Data notebook lokal, tidak dipush karena bisa berisi URI MongoDB
+bigdata/*.ipynb
