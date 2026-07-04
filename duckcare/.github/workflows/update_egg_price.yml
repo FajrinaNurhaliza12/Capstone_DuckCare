@@ -34,8 +34,8 @@ jobs:
       - name: Jalankan update harga telur
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          MONGO_DB_NAME: duckcare_bigdata
-          MONGO_COLLECTION: harga_telur
+          MONGO_DB_NAME: harga_telur_db
+          MONGO_COLLECTION: harga_harian
         run: |
           python bigdata/update_egg_price.py
 
