@@ -36,7 +36,11 @@ HEADERS = {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/120.0.0.0 Safari/537.36"
-    )
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://www.google.com/",
+    "Connection": "keep-alive",
 }
 # ==========================================================
 # FUNGSI SCRAPING SUNEGG
@@ -406,11 +410,15 @@ def main():
     try:
         print("Mulai update harga telur DuckCare...")
 
-        data_harga = scrape_indeks_harga()
-
         client = koneksi_mongodb()
 
-        simpan_ke_mongodb(client, data_harga)
+        try:
+            data_harga = scrape_indeks_harga()
+            simpan_ke_mongodb(client, data_harga)
+
+        except Exception as scrape_error:
+            print(f"Scraping SunEgg gagal: {scrape_error}")
+            print("Lanjut membuat report dari data MongoDB yang sudah ada.")
 
         report = buat_report_json(client, jumlah_hari=30)
 
