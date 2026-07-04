@@ -69,7 +69,7 @@ class RegisterController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }                          // ← kurung tutup register() yang kurang tadi
+  }                      
 
   void _snack(String title, String msg, Color color) {
     Get.snackbar(
@@ -82,11 +82,6 @@ class RegisterController extends GetxController {
 
   @override
   void onClose() {
-    nameController.dispose();
-    emailController.dispose();
-    phoneController.dispose();
-    farmController.dispose();
-    passwordController.dispose();
     super.onClose();
   }
 }

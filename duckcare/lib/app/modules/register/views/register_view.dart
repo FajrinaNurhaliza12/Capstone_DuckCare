@@ -14,7 +14,6 @@ class RegisterView extends GetView<RegisterController> {
       body: Stack(
         children: [
 
-          /// BACKGROUND ATAS
           Positioned(
             top: -120,
             left: -100,
@@ -28,7 +27,6 @@ class RegisterView extends GetView<RegisterController> {
             ),
           ),
 
-          /// BACKGROUND BAWAH
           Positioned(
             bottom: -150,
             right: -120,
@@ -96,7 +94,7 @@ class RegisterView extends GetView<RegisterController> {
 
                         /// TITLE
                         const Text(
-                          "Get Started",
+                          "Daftar Akun Baru",
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
@@ -107,7 +105,7 @@ class RegisterView extends GetView<RegisterController> {
                         const SizedBox(height: 8),
 
                         Text(
-                          "Create your farm profile to begin monitoring.",
+                          "Buat akun untuk mulai mengelola peternakan bebek Anda dengan DuckCare",
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             height: 1.5,
@@ -119,7 +117,7 @@ class RegisterView extends GetView<RegisterController> {
                         /// FULL NAME
                         customField(
                           controller: controller.nameController,
-                          hint: "Johnathan Duck",
+                          hint: "JoniYesPapa Duck",
                           icon: Icons.person_outline,
                         ),
 
@@ -128,7 +126,7 @@ class RegisterView extends GetView<RegisterController> {
                         /// EMAIL
                         customField(
                           controller: controller.emailController,
-                          hint: "farmer@duckcare.io",
+                          hint: "farmer@gmail.com",
                           icon: Icons.mail_outline,
                         ),
 
@@ -137,7 +135,7 @@ class RegisterView extends GetView<RegisterController> {
                         /// PHONE
                         customField(
                           controller: controller.phoneController,
-                          hint: "+62 812 xxxx xxxx",
+                          hint: "08**********",
                           icon: Icons.call_outlined,
                         ),
 
@@ -198,7 +196,7 @@ class RegisterView extends GetView<RegisterController> {
                                     strokeWidth: 2,
                                   )
                                 : const Text(
-                                    "Create Account",
+                                    "Buat Akun!",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -213,18 +211,17 @@ class RegisterView extends GetView<RegisterController> {
 
                   const SizedBox(height: 24),
 
-                  /// SUDAH PUNYA AKUN — di luar card
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Already have an account?",
+                        "Sudah punya akun?",
                         style: TextStyle(color: Colors.grey.shade600),
                       ),
                       TextButton(
                         onPressed: () => Get.back(),
                         child: const Text(
-                          "Login here",
+                          "Masuk di sini",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),

@@ -99,7 +99,15 @@ class OtpController extends GetxController {
         if (otpType == 'register') {
           _box.remove('otp_type');
           _box.remove('pending_email');
-          _snack('Berhasil', 'Akun berhasil diverifikasi, silakan login', Colors.green);
+          // Tunggu snackbar selesai dulu, baru navigate
+          Get.snackbar(
+            'Berhasil', 'Akun berhasil diverifikasi, silakan login',
+            backgroundColor: Colors.green,
+            colorText:       Colors.white,
+            snackPosition:   SnackPosition.BOTTOM,
+            duration:        const Duration(seconds: 2),
+          );
+          await Future.delayed(const Duration(seconds: 2));
           Get.offAllNamed(Routes.LOGIN);
 
         } else {

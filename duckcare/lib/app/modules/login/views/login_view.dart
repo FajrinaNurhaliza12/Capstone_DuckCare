@@ -13,8 +13,6 @@ class LoginView extends GetView<LoginController> {
 
       body: Stack(
         children: [
-
-          /// BACKGROUND ATAS
           Positioned(
             top: -100,
             right: -120,
@@ -28,7 +26,6 @@ class LoginView extends GetView<LoginController> {
             ),
           ),
 
-          /// BACKGROUND BAWAH
           Positioned(
             bottom: -120,
             left: -120,
@@ -120,7 +117,7 @@ class LoginView extends GetView<LoginController> {
                       children: [
 
                         const Text(
-                          "Welcome Back",
+                          "Selamat Datang, Peternak Bebek!",
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -130,7 +127,7 @@ class LoginView extends GetView<LoginController> {
                         const SizedBox(height: 8),
 
                         Text(
-                          "Sign in to manage your ducks",
+                          "Masuk untuk mengelola peternakan bebek Anda dengan mudah",
                           style: TextStyle(color: Colors.grey.shade600),
                         ),
 
@@ -141,7 +138,7 @@ class LoginView extends GetView<LoginController> {
                           controller: controller.emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
-                            hintText: "farmer@duckcare.com",
+                            hintText: "farmer@gmail.com",
                             prefixIcon: const Icon(Icons.mail_outline),
                             filled: true,
                             fillColor: const Color(0xffF5F7FB),
@@ -186,7 +183,7 @@ class LoginView extends GetView<LoginController> {
                           child: TextButton(
                             onPressed: () =>
                                 Get.toNamed(Routes.FORGOT_PASSWORD),
-                            child: const Text("Forgot Password?"),
+                            child: const Text("Lupa Password?"),
                           ),
                         ),
 
@@ -215,7 +212,7 @@ class LoginView extends GetView<LoginController> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        "Login",
+                                        "Masuk!",
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
@@ -237,18 +234,17 @@ class LoginView extends GetView<LoginController> {
 
                   const SizedBox(height: 24),
 
-                  /// DON'T HAVE AN ACCOUNT — di luar card
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account?",
+                        "Tidak punya akun?",
                         style: TextStyle(color: Colors.grey.shade600),
                       ),
                       TextButton(
                         onPressed: () => Get.toNamed(Routes.REGISTER),
                         child: const Text(
-                          "Register",
+                          "Daftar Sekarang!",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),

@@ -112,7 +112,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                           controller: controller.emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
-                            hintText: 'farmer@duckcare.io',
+                            hintText: 'farmer@gmail.com',
                             prefixIcon: const Icon(Icons.mail_outline),
                             filled: true,
                             fillColor: const Color(0xffF5F7FB),
@@ -168,7 +168,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                             TextButton(
                               onPressed: () => Get.back(),
                               child: const Text(
-                                'Login di sini',
+                                'Masuk di sini!',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),

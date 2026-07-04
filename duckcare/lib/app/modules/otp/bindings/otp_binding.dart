@@ -7,6 +7,7 @@ class OtpBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<OtpController>(
       () => OtpController(),
+      fenix: true,
     );
   }
 }
