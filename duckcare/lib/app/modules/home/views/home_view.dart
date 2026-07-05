@@ -7,9 +7,16 @@ import '../controllers/home_controller.dart';
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
 
-  static const Color primary = Color(0xff10B981);
-  static const Color primaryDark = Color(0xff059669);
-  static const Color bg = Color(0xffF5F7FB);
+  static const Color primary = Color(0xFF2E7D32);
+  static const Color primaryDark = Color(0xFF1B5E20);
+  static const Color primarySoft = Color(0xFFE8F5E9);
+  static const Color bg = Color(0xFFF7FAF7);
+  static const Color cardColor = Colors.white;
+  static const Color textDark = Color(0xFF1F2937);
+  static const Color textSoft = Color(0xFF6B7280);
+  static const Color borderSoft = Color(0xFFE5E7EB);
+
+  static const String logoAsset = 'assets/images/LogoDuckCare2.png';
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +26,7 @@ class HomeView extends GetView<HomeController> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: primary,
         foregroundColor: Colors.white,
+        elevation: 6,
         onPressed: () {
           controller.prepareAddDuck();
           _showDuckForm(context);
@@ -41,23 +49,24 @@ class HomeView extends GetView<HomeController> {
               children: [
                 _header(),
                 const SizedBox(height: 28),
-
                 const Text(
                   'Beranda',
                   style: TextStyle(
+                    color: textDark,
                     fontSize: 31,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
+                const Text(
                   'Kelola populasi bebek dan pantau kondisi kesehatannya.',
-                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: textSoft,
+                  ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Obx(() {
                   if (controller.isLoading.value) {
                     return const Center(
@@ -99,37 +108,34 @@ class HomeView extends GetView<HomeController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
+        Image.asset(
+          logoAsset,
+          height: 54,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 54,
+              height: 54,
               decoration: BoxDecoration(
-                color: const Color(0xffDCFCE7),
-                borderRadius: BorderRadius.circular(18),
+                color: primarySoft,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderSoft),
               ),
-              child: const Icon(Icons.pets_rounded, color: primary, size: 28),
-            ),
-            const SizedBox(width: 12),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'DuckCare',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                    color: primaryDark,
-                  ),
-                ),
-                Text('Monitoring Peternakan', style: TextStyle(fontSize: 12)),
-              ],
-            ),
-          ],
+              child: const Icon(
+                Icons.pets_rounded,
+                color: primary,
+                size: 30,
+              ),
+            );
+          },
         ),
         IconButton(
           onPressed: () => Get.toNamed('/notification'),
-          icon: const Icon(Icons.notifications_none_rounded, size: 30),
+          icon: const Icon(
+            Icons.notifications_none_rounded,
+            size: 30,
+            color: textDark,
+          ),
         ),
       ],
     );
@@ -141,12 +147,26 @@ class HomeView extends GetView<HomeController> {
       children: [
         const Text(
           'Data Populasi Bebek',
-          style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
+          style: TextStyle(
+            color: textDark,
+            fontSize: 21,
+            fontWeight: FontWeight.w900,
+          ),
         ),
         TextButton.icon(
           onPressed: controller.loadDucks,
-          icon: const Icon(Icons.refresh_rounded, size: 18),
-          label: const Text('Refresh'),
+          icon: const Icon(
+            Icons.refresh_rounded,
+            size: 18,
+            color: primary,
+          ),
+          label: const Text(
+            'Refresh',
+            style: TextStyle(
+              color: primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ],
     );
@@ -157,11 +177,18 @@ class HomeView extends GetView<HomeController> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [primary, primaryDark]),
+        gradient: const LinearGradient(
+          colors: [
+            primaryDark,
+            primary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: primary.withOpacity(0.25),
+            color: primary.withOpacity(0.22),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -170,7 +197,20 @@ class HomeView extends GetView<HomeController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 40),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.16),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: const Icon(
+              Icons.camera_alt_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
           const SizedBox(height: 18),
           const Text(
             'AI Scanner',
@@ -183,13 +223,18 @@ class HomeView extends GetView<HomeController> {
           const SizedBox(height: 8),
           const Text(
             'Scan kondisi bebek untuk membantu deteksi kesehatan.',
-            style: TextStyle(color: Colors.white70, fontSize: 15),
+            style: TextStyle(
+              color: Color(0xFFE8F5E9),
+              fontSize: 15,
+              height: 1.35,
+            ),
           ),
           const SizedBox(height: 18),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: primaryDark,
+              foregroundColor: primary,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -210,29 +255,38 @@ class HomeView extends GetView<HomeController> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: borderSoft),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 12),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.inventory_2_outlined,
-            size: 52,
-            color: Colors.grey.shade400,
+          _duckImageIcon(
+            size: 70,
+            iconSize: 44,
+            bgColor: primarySoft,
           ),
           const SizedBox(height: 12),
           const Text(
             'Belum ada data populasi',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              color: textDark,
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             'Klik tombol Tambah Populasi untuk menambahkan data bebek.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade600),
+            style: TextStyle(color: textSoft),
           ),
         ],
       ),
@@ -246,13 +300,14 @@ class HomeView extends GetView<HomeController> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: borderSoft),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.035),
             blurRadius: 14,
-            offset: const Offset(0, 5),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -260,14 +315,10 @@ class HomeView extends GetView<HomeController> {
         children: [
           Row(
             children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.13),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(Icons.pets_rounded, color: statusColor, size: 30),
+              _duckImageIcon(
+                size: 58,
+                iconSize: 34,
+                bgColor: statusColor.withOpacity(0.13),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -277,6 +328,7 @@ class HomeView extends GetView<HomeController> {
                     Text(
                       duck.duckType.isEmpty ? 'Bebek' : duck.duckType,
                       style: const TextStyle(
+                        color: textDark,
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
                       ),
@@ -284,8 +336,8 @@ class HomeView extends GetView<HomeController> {
                     const SizedBox(height: 4),
                     Text(
                       '${duck.quantity} ekor • Umur rata-rata ${duck.ageMonth} bulan',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
+                      style: const TextStyle(
+                        color: textSoft,
                         fontSize: 13,
                       ),
                     ),
@@ -333,7 +385,7 @@ class HomeView extends GetView<HomeController> {
                 child: _countBox(
                   label: 'Sehat',
                   value: duck.healthyCount.toString(),
-                  color: Colors.green,
+                  color: primary,
                 ),
               ),
               const SizedBox(width: 10),
@@ -368,12 +420,16 @@ class HomeView extends GetView<HomeController> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xffF8FAFC),
+                color: bg,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderSoft),
               ),
               child: Text(
                 duck.note,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: textSoft,
+                ),
               ),
             ),
           ],
@@ -421,10 +477,62 @@ class HomeView extends GetView<HomeController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xffF1F5F9),
+        color: primarySoft,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 11)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: primary,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _duckImageIcon({
+    required double size,
+    required double iconSize,
+    required Color bgColor,
+  }) {
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Image.asset(
+        logoAsset,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.pets_rounded,
+            color: primary,
+            size: iconSize,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _duckPrefixIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Image.asset(
+        logoAsset,
+        width: 22,
+        height: 22,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.pets_rounded,
+            color: primary,
+          );
+        },
+      ),
     );
   }
 
@@ -438,7 +546,7 @@ class HomeView extends GetView<HomeController> {
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: bg,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: SingleChildScrollView(
@@ -462,32 +570,35 @@ class HomeView extends GetView<HomeController> {
                       ? 'Tambah Populasi Bebek'
                       : 'Edit Populasi Bebek',
                   style: const TextStyle(
+                    color: textDark,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
+                const Text(
                   'Masukkan data berdasarkan jumlah populasi, bukan satu per satu.',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                  style: TextStyle(
+                    color: textSoft,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 18),
-
                 _input(
                   label: 'Jenis Bebek',
                   hint: 'Contoh: Bebek Petelur',
                   controller: controller.duckTypeCtrl,
                   icon: Icons.category_rounded,
+                  useDuckIcon: true,
                 ),
-
                 _input(
                   label: 'Total Bebek',
                   hint: 'Contoh: 120',
                   controller: controller.quantityCtrl,
                   icon: Icons.groups_rounded,
                   keyboardType: TextInputType.number,
+                  useDuckIcon: true,
                 ),
-
                 Row(
                   children: [
                     Expanded(
@@ -511,7 +622,6 @@ class HomeView extends GetView<HomeController> {
                     ),
                   ],
                 ),
-
                 _input(
                   label: 'Dalam Perawatan',
                   hint: 'Contoh: 2',
@@ -519,7 +629,6 @@ class HomeView extends GetView<HomeController> {
                   icon: Icons.healing_rounded,
                   keyboardType: TextInputType.number,
                 ),
-
                 Row(
                   children: [
                     Expanded(
@@ -543,7 +652,6 @@ class HomeView extends GetView<HomeController> {
                     ),
                   ],
                 ),
-
                 _input(
                   label: 'Catatan',
                   hint: 'Contoh: Produksi telur stabil',
@@ -551,25 +659,23 @@ class HomeView extends GetView<HomeController> {
                   icon: Icons.note_alt_rounded,
                   maxLines: 3,
                 ),
-
                 const SizedBox(height: 6),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xffECFDF5),
+                    color: primarySoft,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Text(
                     'Catatan: jumlah Sehat + Sakit + Perawatan harus sama dengan Total Bebek.',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xff006C49),
+                      color: primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
@@ -620,6 +726,7 @@ class HomeView extends GetView<HomeController> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    bool useDuckIcon = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -630,16 +737,16 @@ class HomeView extends GetView<HomeController> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          prefixIcon: Icon(icon),
+          prefixIcon: useDuckIcon ? _duckPrefixIcon() : Icon(icon),
           filled: true,
-          fillColor: const Color(0xffF8FAFC),
+          fillColor: cardColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: Colors.grey.shade200),
+            borderSide: const BorderSide(color: borderSoft),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: Colors.grey.shade200),
+            borderSide: const BorderSide(color: borderSoft),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
@@ -682,7 +789,7 @@ class HomeView extends GetView<HomeController> {
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'sehat':
-        return Colors.green;
+        return primary;
       case 'sakit':
         return Colors.orange;
       case 'perawatan':
@@ -711,6 +818,8 @@ class HomeView extends GetView<HomeController> {
     return BottomNavigationBar(
       currentIndex: 0,
       type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      elevation: 10,
       selectedItemColor: primaryColor,
       unselectedItemColor: Colors.grey,
       selectedLabelStyle: const TextStyle(
@@ -777,8 +886,9 @@ class _SummaryGrid extends StatelessWidget {
         DashboardCard(
           title: 'Total Bebek',
           value: controller.totalDucks.value.toString(),
-          icon: Icons.groups_rounded,
-          color: Colors.blue,
+          icon: Icons.pets_rounded,
+          color: HomeView.primary,
+          useDuckIcon: true,
         ),
         const SizedBox(height: 14),
         Row(
@@ -788,7 +898,7 @@ class _SummaryGrid extends StatelessWidget {
                 title: 'Sehat',
                 value: controller.healthyDucks.value.toString(),
                 icon: Icons.favorite_rounded,
-                color: Colors.green,
+                color: HomeView.primary,
                 small: true,
               ),
             ),
@@ -822,6 +932,7 @@ class DashboardCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final bool small;
+  final bool useDuckIcon;
 
   const DashboardCard({
     super.key,
@@ -830,6 +941,7 @@ class DashboardCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.small = false,
+    this.useDuckIcon = false,
   });
 
   @override
@@ -837,10 +949,15 @@ class DashboardCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(small ? 16 : 19),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: HomeView.cardColor,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: HomeView.borderSoft),
         boxShadow: [
-          BoxShadow(blurRadius: 12, color: Colors.black.withOpacity(0.035)),
+          BoxShadow(
+            blurRadius: 14,
+            color: Colors.black.withOpacity(0.035),
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Row(
@@ -848,11 +965,28 @@ class DashboardCard extends StatelessWidget {
           Container(
             width: small ? 48 : 62,
             height: small ? 48 : 62,
+            padding: useDuckIcon ? const EdgeInsets.all(8) : EdgeInsets.zero,
             decoration: BoxDecoration(
               color: color.withOpacity(0.14),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(icon, color: color, size: small ? 25 : 31),
+            child: useDuckIcon
+                ? Image.asset(
+                    HomeView.logoAsset,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.pets_rounded,
+                        color: color,
+                        size: small ? 25 : 31,
+                      );
+                    },
+                  )
+                : Icon(
+                    icon,
+                    color: color,
+                    size: small ? 25 : 31,
+                  ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -863,15 +997,16 @@ class DashboardCard extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: small ? 12 : 14,
+                  style: const TextStyle(
+                    color: HomeView.textSoft,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   value,
                   style: TextStyle(
+                    color: HomeView.textDark,
                     fontSize: small ? 24 : 30,
                     fontWeight: FontWeight.w900,
                   ),
@@ -903,7 +1038,7 @@ Widget _navItem({
           Icon(
             icon,
             size: 24,
-            color: active ? const Color(0xff10B981) : Colors.grey.shade500,
+            color: active ? HomeView.primary : Colors.grey.shade500,
           ),
           const SizedBox(height: 4),
           Text(
@@ -911,7 +1046,7 @@ Widget _navItem({
             style: TextStyle(
               fontSize: 11,
               fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-              color: active ? const Color(0xff10B981) : Colors.grey.shade500,
+              color: active ? HomeView.primary : Colors.grey.shade500,
             ),
           ),
         ],

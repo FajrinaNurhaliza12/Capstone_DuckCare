@@ -9,6 +9,11 @@ class SplashView extends StatefulWidget {
 }
 
 class _SplashViewState extends State<SplashView> {
+  static const Color primaryColor = Color(0xFF2E7D32);
+  static const Color primaryDark = Color(0xFF1B5E20);
+  static const Color backgroundColor = Color(0xFFF7FAF7);
+
+  static const String logoAsset = 'assets/images/LogoDuckCare3.png';
 
   @override
   void initState() {
@@ -24,111 +29,43 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: const Color(0xffF8FAF6),
-
-      body: Stack(
-        children: [
-
-          Positioned(
-            top: -100,
-            right: -100,
-
-            child: Container(
-              width: 250,
-              height: 250,
-
-              decoration: BoxDecoration(
-                color: const Color(0xff10B981)
-                    .withOpacity(0.08),
-
-                shape: BoxShape.circle,
+      backgroundColor: backgroundColor,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 230,
+                height: 230,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withOpacity(0.14),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  logoAsset,
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
-          ),
 
-          Positioned(
-            bottom: -120,
-            left: -120,
+              const SizedBox(height: 46),
 
-            child: Container(
-              width: 300,
-              height: 300,
-
-              decoration: BoxDecoration(
-                color: Colors.orange
-                    .withOpacity(0.08),
-
-                shape: BoxShape.circle,
+              const CircularProgressIndicator(
+                color: primaryColor,
+                strokeWidth: 3,
               ),
-            ),
+            ],
           ),
-
-          SafeArea(
-            child: Center(
-              child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
-
-                children: [
-
-                  Container(
-                    width: 120,
-                    height: 120,
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-
-                      shape: BoxShape.circle,
-
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 20,
-                          color: Colors.black
-                              .withOpacity(0.08),
-                        ),
-                      ],
-                    ),
-
-                    child: const Icon(
-                      Icons.eco,
-                      size: 60,
-                      color: Color(0xff0F5238),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  const Text(
-                    "DuckCare",
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff0F5238),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    "Smart Solutions for Happy Ducks",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-
-                  const SizedBox(height: 60),
-
-                  const CircularProgressIndicator(
-                    color: Color(0xff10B981),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

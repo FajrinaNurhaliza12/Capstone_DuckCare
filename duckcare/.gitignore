@@ -48,6 +48,7 @@ app.*.map.json
 lib/app/data/providers/auth_provider.dart
 lib/app/data/providers/duck_provider.dart
 lib/app/data/providers/schedule_rule_provider.dart
+lib/app/data/providers/report_provider.dart
 
 # GetStorage data
 *.gs

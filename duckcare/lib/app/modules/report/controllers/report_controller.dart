@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:get/get.dart';
 
 import '../../../data/models/report_model.dart';
@@ -29,6 +31,9 @@ class ReportController extends GetxController {
   final RxList<EggPriceEntry> hargaTertinggi = <EggPriceEntry>[].obs;
   final RxList<TrendPoint> trendPoints = <TrendPoint>[].obs;
 
+  final RxList<EggPriceEntry> _allHargaTertinggi = <EggPriceEntry>[].obs;
+  final RxList<TrendPoint> _allTrendPoints = <TrendPoint>[].obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -40,7 +45,8 @@ class ReportController extends GetxController {
       detail: 'User membuka halaman laporan',
     );
   }
-    Future<void> loadReport() async {
+
+  Future<void> loadReport() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
@@ -69,19 +75,24 @@ class ReportController extends GetxController {
       _setWilayahOptions(reportData);
       _setTrendPoints(reportData);
       _setHargaTertinggi(reportData);
+      _applyFilters();
     } catch (e) {
       errorMessage.value = 'Terjadi kesalahan saat mengambil report: $e';
     } finally {
       isLoading.value = false;
     }
   }
-    void _setWilayahOptions(ReportModel reportData) {
+
+  void _setWilayahOptions(ReportModel reportData) {
     wilayahOptions.clear();
 
-    if (reportData.wilayahOptions.isEmpty) {
-      wilayahOptions.add('Semua Wilayah');
-    } else {
-      wilayahOptions.addAll(reportData.wilayahOptions);
+    wilayahOptions.add('Semua Wilayah');
+
+    for (final item in reportData.wilayahOptions) {
+      if (item.trim().isEmpty) continue;
+      if (!wilayahOptions.contains(item)) {
+        wilayahOptions.add(item);
+      }
     }
 
     if (!wilayahOptions.contains(selectedWilayah.value)) {
@@ -90,7 +101,7 @@ class ReportController extends GetxController {
   }
 
   void _setTrendPoints(ReportModel reportData) {
-    trendPoints.clear();
+    _allTrendPoints.clear();
 
     final mappedTrend = reportData.trend.map((item) {
       return TrendPoint(
@@ -100,11 +111,11 @@ class ReportController extends GetxController {
       );
     }).toList();
 
-    trendPoints.addAll(mappedTrend);
+    _allTrendPoints.addAll(mappedTrend);
   }
 
   void _setHargaTertinggi(ReportModel reportData) {
-    hargaTertinggi.clear();
+    _allHargaTertinggi.clear();
 
     final mappedHarga = reportData.hargaTertinggi.map((item) {
       return EggPriceEntry(
@@ -115,19 +126,214 @@ class ReportController extends GetxController {
       );
     }).toList();
 
-    hargaTertinggi.addAll(mappedHarga);
+    _allHargaTertinggi.addAll(mappedHarga);
   }
-    void changePeriod(String? value) {
+
+  void _applyFilters() {
+    final int limit = _periodLimit();
+
+    final List<TrendPoint> periodTrend = _takeLastTrend(
+      _allTrendPoints.toList(),
+      limit,
+    );
+
+    final List<EggPriceEntry> periodHarga = _filterHargaByPeriod(
+      _allHargaTertinggi.toList(),
+      limit,
+    );
+
+    final bool semuaWilayah = selectedWilayah.value == 'Semua Wilayah';
+
+    final List<EggPriceEntry> wilayahHarga = semuaWilayah
+        ? periodHarga
+        : periodHarga.where((item) {
+            return _normalize(item.wilayah) == _normalize(selectedWilayah.value);
+          }).toList();
+
+    hargaTertinggi.assignAll(wilayahHarga);
+
+    if (semuaWilayah) {
+      trendPoints.assignAll(periodTrend);
+    } else {
+      final List<TrendPoint> trendWilayah = _buildTrendFromHarga(wilayahHarga);
+
+      if (trendWilayah.isNotEmpty) {
+        trendPoints.assignAll(trendWilayah);
+      } else {
+        trendPoints.assignAll(periodTrend);
+      }
+    }
+  }
+
+  int _periodLimit() {
+    switch (selectedPeriod.value) {
+      case '7 Hari Terakhir':
+        return 7;
+      case '30 Hari Terakhir':
+        return 30;
+      case '3 Bulan Terakhir':
+        return 90;
+      default:
+        return 30;
+    }
+  }
+
+  List<TrendPoint> _takeLastTrend(List<TrendPoint> source, int limit) {
+    if (source.isEmpty) return [];
+    if (source.length <= limit) return source;
+
+    return source.sublist(source.length - limit);
+  }
+
+  List<EggPriceEntry> _filterHargaByPeriod(
+    List<EggPriceEntry> source,
+    int limit,
+  ) {
+    if (source.isEmpty) return [];
+
+    final DateTime now = DateTime.now();
+    final DateTime batasTanggal = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: limit));
+
+    bool adaTanggalValid = false;
+
+    final List<EggPriceEntry> filtered = source.where((item) {
+      final DateTime? tanggal = _parseTanggal(item.tanggal);
+
+      if (tanggal == null) {
+        return false;
+      }
+
+      adaTanggalValid = true;
+
+      final DateTime tanggalOnly = DateTime(
+        tanggal.year,
+        tanggal.month,
+        tanggal.day,
+      );
+
+      return tanggalOnly.isAfter(batasTanggal) ||
+          tanggalOnly.isAtSameMomentAs(batasTanggal);
+    }).toList();
+
+    if (!adaTanggalValid) {
+      return source;
+    }
+
+    if (filtered.isEmpty) {
+      return source;
+    }
+
+    return filtered;
+  }
+
+  List<TrendPoint> _buildTrendFromHarga(List<EggPriceEntry> source) {
+    if (source.isEmpty) return [];
+
+    final List<EggPriceEntry> sorted = source.toList();
+
+    sorted.sort((a, b) {
+      final DateTime? tanggalA = _parseTanggal(a.tanggal);
+      final DateTime? tanggalB = _parseTanggal(b.tanggal);
+
+      if (tanggalA == null || tanggalB == null) {
+        return 0;
+      }
+
+      return tanggalA.compareTo(tanggalB);
+    });
+
+    final int minHarga = sorted.map((e) => e.harga).reduce(min);
+    final int maxHarga = sorted.map((e) => e.harga).reduce(max);
+
+    return sorted.map((item) {
+      double value = 0.5;
+
+      if (maxHarga != minHarga) {
+        value = (item.harga - minHarga) / (maxHarga - minHarga);
+      }
+
+      return TrendPoint(
+        label: _shortDateLabel(item.tanggal),
+        value: value,
+        hargaAsli: item.harga,
+      );
+    }).toList();
+  }
+
+  DateTime? _parseTanggal(String value) {
+    final String clean = value.trim();
+
+    if (clean.isEmpty || clean == '-') {
+      return null;
+    }
+
+    final DateTime? iso = DateTime.tryParse(clean);
+
+    if (iso != null) {
+      return iso;
+    }
+
+    if (clean.contains('/')) {
+      final parts = clean.split('/');
+
+      if (parts.length == 3) {
+        final int? day = int.tryParse(parts[0]);
+        final int? month = int.tryParse(parts[1]);
+        final int? year = int.tryParse(parts[2]);
+
+        if (day != null && month != null && year != null) {
+          return DateTime(year, month, day);
+        }
+      }
+    }
+
+    if (clean.contains('-')) {
+      final parts = clean.split('-');
+
+      if (parts.length == 3) {
+        final int? day = int.tryParse(parts[0]);
+        final int? month = int.tryParse(parts[1]);
+        final int? year = int.tryParse(parts[2]);
+
+        if (day != null && month != null && year != null) {
+          return DateTime(year, month, day);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  String _shortDateLabel(String value) {
+    final DateTime? tanggal = _parseTanggal(value);
+
+    if (tanggal == null) {
+      return value;
+    }
+
+    return '${tanggal.day.toString().padLeft(2, '0')}/${tanggal.month.toString().padLeft(2, '0')}';
+  }
+
+  String _normalize(String value) {
+    return value.trim().toLowerCase();
+  }
+
+  void changePeriod(String? value) {
     if (value == null || value.isEmpty) return;
 
     selectedPeriod.value = value;
-    loadReport();
+    _applyFilters();
   }
 
   void changeWilayah(String? value) {
     if (value == null || value.isEmpty) return;
 
     selectedWilayah.value = value;
+    _applyFilters();
   }
 
   Future<void> refreshReport() async {
@@ -149,37 +355,106 @@ class ReportController extends GetxController {
     return '${value.toStringAsFixed(1)}%';
   }
 
-    ReportSummary? get summary => report.value?.summary;
+  ReportSummary? get summary => report.value?.summary;
+
+  List<int> get _currentPrices {
+    if (selectedWilayah.value != 'Semua Wilayah' && hargaTertinggi.isNotEmpty) {
+      return hargaTertinggi.map((item) => item.harga).toList();
+    }
+
+    if (trendPoints.isNotEmpty) {
+      return trendPoints.map((item) => item.hargaAsli).toList();
+    }
+
+    if (hargaTertinggi.isNotEmpty) {
+      return hargaTertinggi.map((item) => item.harga).toList();
+    }
+
+    return [];
+  }
+
+  int get _highestPrice {
+    if (_currentPrices.isEmpty) {
+      return summary?.hargaTertinggiNasional ?? 0;
+    }
+
+    return _currentPrices.reduce(max);
+  }
+
+  int get _lowestPrice {
+    if (_currentPrices.isEmpty) {
+      return summary?.hargaTerendahNasional ?? 0;
+    }
+
+    return _currentPrices.reduce(min);
+  }
+
+  int get _averagePrice {
+    if (_currentPrices.isEmpty) {
+      return summary?.hargaRataRata ?? 0;
+    }
+
+    final int total = _currentPrices.fold(0, (sum, item) => sum + item);
+
+    return (total / _currentPrices.length).round();
+  }
+
+  int get _latestPrice {
+    if (trendPoints.isNotEmpty) {
+      return trendPoints.last.hargaAsli;
+    }
+
+    return summary?.hargaTerakhir ?? 0;
+  }
+
+  int get _previousPrice {
+    if (trendPoints.length >= 2) {
+      return trendPoints[trendPoints.length - 2].hargaAsli;
+    }
+
+    return summary?.hargaSebelumnya ?? 0;
+  }
+
+  double get persentaseKenaikanValue {
+    final int previous = _previousPrice;
+    final int latest = _latestPrice;
+
+    if (previous <= 0) {
+      return summary?.persentaseKenaikan ?? 0;
+    }
+
+    return ((latest - previous) / previous) * 100;
+  }
 
   String get hargaTerakhir {
-    return formatRupiah(summary?.hargaTerakhir ?? 0);
+    return formatRupiah(_latestPrice);
   }
 
   String get hargaSebelumnya {
-    return formatRupiah(summary?.hargaSebelumnya ?? 0);
+    return formatRupiah(_previousPrice);
   }
 
   String get hargaRataRata {
-    return formatRupiah(summary?.hargaRataRata ?? 0);
+    return formatRupiah(_averagePrice);
   }
 
   String get hargaTertinggiNasional {
-    return formatRupiah(summary?.hargaTertinggiNasional ?? 0);
+    return formatRupiah(_highestPrice);
   }
 
   String get hargaTerendahNasional {
-    return formatRupiah(summary?.hargaTerendahNasional ?? 0);
+    return formatRupiah(_lowestPrice);
   }
 
   String get persentaseKenaikan {
-    return formatPersen(summary?.persentaseKenaikan ?? 0);
+    return formatPersen(persentaseKenaikanValue);
   }
 
   String get periodeKenaikan {
-    return 'vs. 30 hari lalu';
+    return 'vs. data sebelumnya';
   }
 
-    double get indeks {
+  double get indeks {
     return summary?.indeks ?? 0;
   }
 
@@ -188,6 +463,10 @@ class ReportController extends GetxController {
   }
 
   int get jumlahData {
+    if (trendPoints.isNotEmpty) {
+      return trendPoints.length;
+    }
+
     return summary?.jumlahData ?? 0;
   }
 
@@ -204,7 +483,15 @@ class ReportController extends GetxController {
   }
 
   String get periode {
-    return report.value?.periode ?? '-';
+    return selectedPeriod.value;
+  }
+
+  String get wilayahLabel {
+    if (selectedWilayah.value == 'Semua Wilayah') {
+      return 'Nasional';
+    }
+
+    return selectedWilayah.value;
   }
 
   bool get hasData {
@@ -217,9 +504,6 @@ class ReportController extends GetxController {
   }) {
     try {
       print('REPORT ACTIVITY: $action - $detail');
-
-      // Kalau nanti AuthProvider kamu punya fitur simpan log aktivitas,
-      // bagian ini bisa disambungkan ke API log.
       _authProvider;
     } catch (_) {}
   }

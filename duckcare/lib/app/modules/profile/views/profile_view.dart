@@ -2,23 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
 
-//  Color palette
+//  Color palette - disamakan dengan halaman Management
 class _C {
-  static const primary = Color(0xFF006c49);
-  static const primaryContainer = Color(0xFF10b981);
-  static const emerald50 = Color(0xFFECFDF5);
-  static const emerald100 = Color(0xFFD1FAE5);
-  static const emerald500 = Color(0xFF10B981);
-  static const emerald600 = Color(0xFF059669);
-  static const surface = Color(0xFFF9F9FF);
-  static const onSurface = Color(0xFF151C27);
-  static const onSurfaceVariant = Color(0xFF3C4A42);
-  static const slate50 = Color(0xFFF8FAFC);
-  static const slate100 = Color(0xFFF1F5F9);
-  static const slate200 = Color(0xFFE2E8F0);
-  static const slate400 = Color(0xFF94A3B8);
-  static const blue100 = Color(0xFFDBEAFE);
-  static const blue700 = Color(0xFF1D4ED8);
+  static const primary = Color(0xFF2E7D32);
+  static const primaryDark = Color(0xFF1B5E20);
+  static const primaryContainer = Color(0xFFE8F5E9);
+
+  static const surface = Color(0xFFF7FAF7);
+  static const cardColor = Colors.white;
+  static const onSurface = Color(0xFF1F2937);
+  static const onSurfaceVariant = Color(0xFF6B7280);
+
+  static const slate50 = Color(0xFFF7FAF7);
+  static const slate100 = Color(0xFFF1F5F1);
+  static const slate200 = Color(0xFFE5E7EB);
+  static const slate400 = Color(0xFF9CA3AF);
+
+  static const borderSoft = Color(0xFFE5E7EB);
+  static const danger = Color(0xFF93000A);
+  static const dangerSoft = Color(0xFFFFDAD6);
 }
 
 //  Text styles
@@ -66,85 +68,21 @@ class ProfileView extends GetView<ProfileController> {
     return Scaffold(
       backgroundColor: _C.surface,
       bottomNavigationBar: _bottomNav(),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(-1, -1),
-            radius: 1.5,
-            colors: [Color(0x0D10B981), _C.surface],
-          ),
-        ),
-        child: SafeArea(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
           child: Column(
             children: [
-              _appBar(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
-                  child: Column(
-                    children: [
-                      _ProfileHeader(controller: controller),
-                      const SizedBox(height: 28),
-                      _MenuSection(controller: controller),
-                      const SizedBox(height: 32),
-                      _LogoutButton(controller: controller),
-                      const SizedBox(height: 12),
-                      _DeleteAccountButton(controller: controller),
-                    ],
-                  ),
-                ),
-              ),
+              _ProfileHeader(controller: controller),
+              const SizedBox(height: 28),
+              _MenuSection(controller: controller),
+              const SizedBox(height: 32),
+              _LogoutButton(controller: controller),
+              const SizedBox(height: 12),
+              _DeleteAccountButton(controller: controller),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ─── APP BAR ────────────────────────────────────────
-  Widget _appBar() {
-    return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.3)),
-        ),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12),
-        ],
-      ),
-      child: Row(
-        children: [
-          Obx(() {
-            final photoUrl = controller.photoUrl;
-
-            return Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _C.emerald50,
-                border: Border.all(color: _C.primaryContainer, width: 2),
-              ),
-              child: ClipOval(
-                child: _NetworkProfileImage(photoUrl: photoUrl, iconSize: 22),
-              ),
-            );
-          }),
-          const SizedBox(width: 12),
-          const Text(
-            'DuckCare',
-            style: TextStyle(
-              fontFamily: 'SpaceGrotesk',
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: _C.emerald600,
-              letterSpacing: -0.5,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -155,6 +93,8 @@ class ProfileView extends GetView<ProfileController> {
     return BottomNavigationBar(
       currentIndex: 4,
       type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      elevation: 10,
       selectedItemColor: primaryColor,
       unselectedItemColor: Colors.grey,
       selectedLabelStyle: const TextStyle(
@@ -208,6 +148,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 }
+
 //  Network / Empty Profile Image
 class _NetworkProfileImage extends StatelessWidget {
   final String photoUrl;
@@ -222,11 +163,11 @@ class _NetworkProfileImage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (photoUrl.trim().isEmpty) {
       return Container(
-        color: _C.slate100,
+        color: _C.primaryContainer,
         child: Icon(
           Icons.person_rounded,
           size: iconSize,
-          color: _C.slate400,
+          color: _C.primary,
         ),
       );
     }
@@ -239,7 +180,7 @@ class _NetworkProfileImage extends StatelessWidget {
         if (loadingProgress == null) return child;
 
         return Container(
-          color: _C.slate100,
+          color: _C.primaryContainer,
           child: const Center(
             child: SizedBox(
               width: 18,
@@ -254,11 +195,11 @@ class _NetworkProfileImage extends StatelessWidget {
       },
       errorBuilder: (context, error, stackTrace) {
         return Container(
-          color: _C.slate100,
+          color: _C.primaryContainer,
           child: Icon(
             Icons.person_rounded,
             size: iconSize,
-            color: _C.slate400,
+            color: _C.primary,
           ),
         );
       },
@@ -285,7 +226,7 @@ Widget _navItem({
           Icon(
             icon,
             size: 24,
-            color: active ? const Color(0xff10B981) : Colors.grey.shade500,
+            color: active ? _C.primary : Colors.grey.shade500,
           ),
           const SizedBox(height: 4),
           Text(
@@ -293,7 +234,7 @@ Widget _navItem({
             style: TextStyle(
               fontSize: 11,
               fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-              color: active ? const Color(0xff10B981) : Colors.grey.shade500,
+              color: active ? _C.primary : Colors.grey.shade500,
             ),
           ),
         ],
@@ -319,10 +260,10 @@ class _ProfileHeader extends StatelessWidget {
               height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: _C.emerald100, width: 4),
+                border: Border.all(color: _C.primaryContainer, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: _C.emerald500.withOpacity(0.2),
+                    color: _C.primary.withOpacity(0.16),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
@@ -378,7 +319,7 @@ class _MenuSection extends StatelessWidget {
       children: [
         _MenuCard(
           icon: Icons.person_rounded,
-          iconBg: _C.emerald50,
+          iconBg: _C.primaryContainer,
           iconColor: _C.primary,
           title: 'Edit Profile',
           subtitle: 'Ubah informasi akun dan peternakanmu',
@@ -387,8 +328,8 @@ class _MenuSection extends StatelessWidget {
         const SizedBox(height: 12),
         _MenuCard(
           icon: Icons.receipt_long_rounded,
-          iconBg: _C.blue100,
-          iconColor: _C.blue700,
+          iconBg: _C.primaryContainer,
+          iconColor: _C.primary,
           title: 'Log Activity',
           subtitle: 'Lihat riwayat aktivitas pengguna',
           onTap: () {
@@ -429,14 +370,14 @@ class _MenuCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
+          color: _C.cardColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.25)),
+          border: Border.all(color: _C.borderSoft),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -447,7 +388,7 @@ class _MenuCard extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: iconBg,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
@@ -477,6 +418,7 @@ class _MenuCard extends StatelessWidget {
     );
   }
 }
+
 //  Log Activity Bottom Sheet
 class _ActivityLogSheet extends StatelessWidget {
   final ProfileController controller;
@@ -488,7 +430,7 @@ class _ActivityLogSheet extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.78,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: _C.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
@@ -502,7 +444,6 @@ class _ActivityLogSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
             child: Row(
@@ -511,12 +452,12 @@ class _ActivityLogSheet extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _C.blue100,
+                    color: _C.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.receipt_long_rounded,
-                    color: _C.blue700,
+                    color: _C.primary,
                     size: 20,
                   ),
                 ),
@@ -536,9 +477,7 @@ class _ActivityLogSheet extends StatelessWidget {
               ],
             ),
           ),
-
           const Divider(height: 1),
-
           Expanded(
             child: Obx(() {
               if (controller.isLoadingLogs.value) {
@@ -591,9 +530,16 @@ class _ActivityLogSheet extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: _C.slate50,
+                        color: _C.cardColor,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: _C.slate200),
+                        border: Border.all(color: _C.borderSoft),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.025),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,9 +557,7 @@ class _ActivityLogSheet extends StatelessWidget {
                               size: 21,
                             ),
                           ),
-
                           const SizedBox(width: 12),
-
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -637,7 +581,6 @@ class _ActivityLogSheet extends StatelessWidget {
                               ],
                             ),
                           ),
-
                           const Icon(
                             Icons.chevron_right_rounded,
                             color: _C.slate400,
@@ -690,24 +633,18 @@ class _ActivityLogSheet extends StatelessWidget {
             Text('Aksi', style: _T.labelCaps()),
             const SizedBox(height: 4),
             Text(_activityTitle(action), style: _T.h3()),
-
             const SizedBox(height: 16),
-
             Text('Keterangan', style: _T.labelCaps()),
             const SizedBox(height: 4),
             Text(
               detail.isEmpty ? '-' : detail,
               style: _T.bodyMd(),
             ),
-
             const SizedBox(height: 16),
-
             Text('Waktu', style: _T.labelCaps()),
             const SizedBox(height: 4),
             Text(createdAt, style: _T.bodyMd()),
-
             const SizedBox(height: 16),
-
             Text('IP Address', style: _T.labelCaps()),
             const SizedBox(height: 4),
             Text(ip, style: _T.bodyMd()),
@@ -824,7 +761,7 @@ class _ActivityLogSheet extends StatelessWidget {
   Color _activityColor(String action) {
     if (action.contains('DELETE')) return Colors.red;
     if (action.contains('UPDATE')) return Colors.orange;
-    if (action.contains('CREATE')) return Colors.green;
+    if (action.contains('CREATE')) return _C.primary;
     if (action.contains('SCAN')) return Colors.purple;
     if (action.contains('LOGIN')) return Colors.blue;
     if (action.contains('LOGOUT')) return Colors.grey;
@@ -832,6 +769,7 @@ class _ActivityLogSheet extends StatelessWidget {
     return _C.primary;
   }
 }
+
 //  Logout Button
 class _LogoutButton extends StatelessWidget {
   final ProfileController controller;
@@ -846,7 +784,7 @@ class _LogoutButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFDAD6),
+          color: _C.dangerSoft,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -861,7 +799,7 @@ class _LogoutButton extends StatelessWidget {
           children: [
             Icon(
               Icons.logout_rounded,
-              color: Color(0xFF93000A),
+              color: _C.danger,
               size: 20,
             ),
             SizedBox(width: 10),
@@ -871,7 +809,7 @@ class _LogoutButton extends StatelessWidget {
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF93000A),
+                color: _C.danger,
               ),
             ),
           ],
@@ -895,10 +833,10 @@ class _DeleteAccountButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _C.cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFF93000A).withOpacity(0.3),
+            color: _C.danger.withOpacity(0.3),
           ),
           boxShadow: [
             BoxShadow(
@@ -913,7 +851,7 @@ class _DeleteAccountButton extends StatelessWidget {
           children: [
             Icon(
               Icons.delete_forever_rounded,
-              color: Color(0xFF93000A),
+              color: _C.danger,
               size: 20,
             ),
             SizedBox(width: 10),
@@ -923,7 +861,7 @@ class _DeleteAccountButton extends StatelessWidget {
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF93000A),
+                color: _C.danger,
               ),
             ),
           ],
@@ -942,7 +880,7 @@ class _DeleteAccountButton extends StatelessWidget {
           children: [
             Icon(
               Icons.warning_rounded,
-              color: Color(0xFF93000A),
+              color: _C.danger,
               size: 24,
             ),
             SizedBox(width: 8),
@@ -981,7 +919,7 @@ class _DeleteAccountButton extends StatelessWidget {
               controller.deleteAccount();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF93000A),
+              backgroundColor: _C.danger,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

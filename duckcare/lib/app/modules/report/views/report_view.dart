@@ -6,19 +6,24 @@ import '../../../data/models/report_model.dart';
 
 // ── Palet warna ──────────────────────────────────────────────
 class _C {
-  static const primary = Color(0xFF006c49);
-  static const primaryContainer = Color(0xFF10b981);
+  static const primary = Color(0xFF2E7D32);
+  static const primaryDark = Color(0xFF1B5E20);
+  static const primaryContainer = Color(0xFFE8F5E9);
   static const secondaryContainer = Color(0xFFFEA619);
-  static const surface = Color(0xFFF9F9FF);
-  static const onSurface = Color(0xFF151C27);
-  static const surfaceContainerLow = Color(0xFFF0F3FF);
-  static const onSurfaceVariant = Color(0xFF3C4A42);
-  static const slate100 = Color(0xFFF1F5F9);
+
+  static const surface = Color(0xFFF7FAF7);
+  static const onSurface = Color(0xFF1F2937);
+  static const surfaceContainerLow = Color(0xFFF1F5F1);
+  static const onSurfaceVariant = Color(0xFF6B7280);
+
+  static const slate100 = Color(0xFFE5E7EB);
   static const slate500 = Color(0xFF64748B);
-  static const emerald50 = Color(0xFFECFDF5);
-  static const emerald500 = Color(0xFF10B981);
-  static const emerald600 = Color(0xFF059669);
-  static const red400 = Color(0xFFF87171);
+
+  static const emerald50 = Color(0xFFE8F5E9);
+  static const emerald500 = Color(0xFF2E7D32);
+  static const emerald600 = Color(0xFF2E7D32);
+
+  static const red400 = Color(0xFFDC2626);
   static const white = Colors.white;
 }
 
@@ -39,7 +44,7 @@ class _T {
   static TextStyle h1({Color color = _C.onSurface}) {
     return _display.copyWith(
       fontSize: 22,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w800,
       color: color,
     );
   }
@@ -47,7 +52,7 @@ class _T {
   static TextStyle h2({Color color = _C.onSurface}) {
     return _display.copyWith(
       fontSize: 18,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w700,
       color: color,
     );
   }
@@ -55,7 +60,7 @@ class _T {
   static TextStyle h3({Color color = _C.onSurface}) {
     return _display.copyWith(
       fontSize: 16,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
       color: color,
     );
   }
@@ -63,7 +68,7 @@ class _T {
   static TextStyle labelCaps({Color color = _C.slate500}) {
     return _body.copyWith(
       fontSize: 10,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w700,
       letterSpacing: 0.8,
       color: color,
     );
@@ -176,56 +181,52 @@ class ReportView extends GetView<ReportController> {
     return Scaffold(
       backgroundColor: _C.surface,
       bottomNavigationBar: _bottomNav(),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(-1, -1),
-            radius: 1.5,
-            colors: [Color(0x0D10B981), _C.surface],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _AppBar(controller: controller),
-              Expanded(
-                child: RefreshIndicator(
-                  color: _C.emerald600,
-                  onRefresh: controller.refreshReport,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                    child: Obx(() {
-                      if (controller.isLoading.value) {
-                        return const SizedBox(
-                          height: 520,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: _C.emerald600,
-                            ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _AppBar(controller: controller),
+            Expanded(
+              child: RefreshIndicator(
+                color: _C.primary,
+                onRefresh: controller.refreshReport,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                  child: Obx(() {
+                    controller.selectedPeriod.value;
+                    controller.selectedWilayah.value;
+                    controller.trendPoints.length;
+                    controller.hargaTertinggi.length;
+
+                    if (controller.isLoading.value) {
+                      return const SizedBox(
+                        height: 520,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: _C.primary,
                           ),
-                        );
-                      }
-
-                      if (controller.errorMessage.value.isNotEmpty) {
-                        return _ErrorReportCard(controller: controller);
-                      }
-
-                      return Column(
-                        children: [
-                          _RingkasanRow(controller: controller),
-                          const SizedBox(height: 20),
-                          _TrendChart(controller: controller),
-                          const SizedBox(height: 20),
-                          _HargaTertinggiCard(controller: controller),
-                        ],
+                        ),
                       );
-                    }),
-                  ),
+                    }
+
+                    if (controller.errorMessage.value.isNotEmpty) {
+                      return _ErrorReportCard(controller: controller);
+                    }
+
+                    return Column(
+                      children: [
+                        _RingkasanRow(controller: controller),
+                        const SizedBox(height: 20),
+                        _TrendChart(controller: controller),
+                        const SizedBox(height: 20),
+                        _HargaTertinggiCard(controller: controller),
+                      ],
+                    );
+                  }),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -237,6 +238,8 @@ class ReportView extends GetView<ReportController> {
     return BottomNavigationBar(
       currentIndex: 3,
       type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      elevation: 10,
       selectedItemColor: primaryColor,
       unselectedItemColor: Colors.grey,
       selectedLabelStyle: const TextStyle(
@@ -318,7 +321,7 @@ class _ErrorReportCard extends StatelessWidget {
           ElevatedButton(
             onPressed: controller.refreshReport,
             style: ElevatedButton.styleFrom(
-              backgroundColor: _C.emerald600,
+              backgroundColor: _C.primary,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -341,55 +344,63 @@ class _AppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.3)),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _C.primaryDark,
+            _C.primary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12),
-        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: _C.primaryContainer, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: _C.primaryContainer.withOpacity(0.25),
-                  blurRadius: 8,
+              color: Colors.white.withOpacity(0.16),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white24,
+              ),
+            ),
+            child: const Icon(
+              Icons.bar_chart,
+              color: Colors.white,
+              size: 25,
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Laporan Harga Telur',
+                  style: TextStyle(
+                    fontFamily: 'SpaceGrotesk',
+                    color: Colors.white,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Pantau tren harga telur berdasarkan periode dan wilayah.',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    color: Color(0xFFE8F5E9),
+                    fontSize: 13,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
-            child: ClipOval(
-              child: Image.asset('assets/images/duck.jpg', fit: BoxFit.cover),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'DuckCare',
-            style: const TextStyle(fontFamily: 'SpaceGrotesk').copyWith(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: _C.emerald600,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _C.emerald50,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _C.emerald500.withOpacity(0.3)),
-            ),
-            child: Text('Laporan', style: _T.labelCaps(color: _C.emerald600)),
           ),
         ],
       ),
@@ -404,7 +415,7 @@ class _RingkasanRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double kenaikan = controller.summary?.persentaseKenaikan ?? 0;
+    final double kenaikan = controller.persentaseKenaikanValue;
     final bool hargaNaik = kenaikan >= 0;
 
     return Column(
@@ -415,12 +426,12 @@ class _RingkasanRow extends StatelessWidget {
               child: _StatCard(
                 label: 'HARGA TERTINGGI',
                 value: controller.hargaTertinggiNasional,
-                subtitle: 'Nasional',
+                subtitle: controller.wilayahLabel,
                 keterangan: controller.periode,
                 icon: Icons.arrow_upward_rounded,
-                iconColor: _C.emerald500,
-                iconBg: _C.emerald50,
-                statusColor: _C.emerald600,
+                iconColor: _C.primary,
+                iconBg: _C.primaryContainer,
+                statusColor: _C.primary,
               ),
             ),
             const SizedBox(width: 14),
@@ -428,11 +439,11 @@ class _RingkasanRow extends StatelessWidget {
               child: _StatCard(
                 label: 'HARGA TERENDAH',
                 value: controller.hargaTerendahNasional,
-                subtitle: 'Nasional',
+                subtitle: controller.wilayahLabel,
                 keterangan: controller.periode,
                 icon: Icons.arrow_downward_rounded,
                 iconColor: _C.red400,
-                iconBg: const Color(0x1AF87171),
+                iconBg: const Color(0x1ADC2626),
                 statusColor: _C.red400,
               ),
             ),
@@ -445,12 +456,12 @@ class _RingkasanRow extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(
-                  color: _C.emerald50,
+                  color: _C.primaryContainer,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.equalizer_rounded,
-                  color: _C.emerald600,
+                  color: _C.primary,
                   size: 22,
                 ),
               ),
@@ -459,12 +470,15 @@ class _RingkasanRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('RATA-RATA NASIONAL', style: _T.labelCaps()),
+                    Text(
+                      'RATA-RATA ${controller.wilayahLabel.toUpperCase()}',
+                      style: _T.labelCaps(),
+                    ),
                     const SizedBox(height: 4),
                     Text(controller.hargaRataRata, style: _T.stat(size: 24)),
                     const SizedBox(height: 4),
                     Text(
-                      '${controller.satuan} · ${controller.jumlahData} data',
+                      '${controller.satuan} · ${controller.jumlahData} data · ${controller.periode}',
                       style: _T.bodySm().copyWith(fontSize: 11),
                     ),
                   ],
@@ -477,14 +491,14 @@ class _RingkasanRow extends StatelessWidget {
                   Text(
                     hargaNaik ? 'Naik' : 'Turun',
                     style: _T
-                        .bodySm(color: hargaNaik ? _C.emerald600 : _C.red400)
+                        .bodySm(color: hargaNaik ? _C.primary : _C.red400)
                         .copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     controller.persentaseKenaikan,
                     style: _T
-                        .bodySm(color: hargaNaik ? _C.emerald600 : _C.red400)
+                        .bodySm(color: hargaNaik ? _C.primary : _C.red400)
                         .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
@@ -614,33 +628,30 @@ class _TrendChart extends StatelessWidget {
                     Text('Tren Harga Telur', style: _T.h1()),
                     const SizedBox(height: 2),
                     Text(
-                      'Pergerakan harga nasional (${controller.satuan})',
+                      '${controller.wilayahLabel} · ${controller.periode} · ${controller.satuan}',
                       style: _T.bodySm(),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 10),
-              Obx(
-                () => DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: controller.selectedPeriod.value,
-                    borderRadius: BorderRadius.circular(16),
-                    style: _T.labelCaps(color: _C.onSurfaceVariant),
-                    items: controller.periodOptions.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: Text(item),
-                      );
-                    }).toList(),
-                    onChanged: controller.changePeriod,
-                  ),
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: controller.selectedPeriod.value,
+                  borderRadius: BorderRadius.circular(16),
+                  style: _T.labelCaps(color: _C.onSurfaceVariant),
+                  items: controller.periodOptions.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(item),
+                    );
+                  }).toList(),
+                  onChanged: controller.changePeriod,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-
           Container(
             height: 230,
             width: double.infinity,
@@ -680,11 +691,9 @@ class _TrendChart extends StatelessWidget {
                     ),
                   ),
           ),
-
           const SizedBox(height: 20),
           const Divider(color: _C.slate100),
           const SizedBox(height: 14),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -732,7 +741,7 @@ class _ChartStat extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: highlight ? _T.h3(color: _C.emerald600) : _T.h3(),
+            style: highlight ? _T.h3(color: _C.primary) : _T.h3(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -801,20 +810,20 @@ class _TrendChartPainter extends CustomPainter {
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0x4D10B981), Color(0x0010B981)],
+        colors: [Color(0x4D2E7D32), Color(0x002E7D32)],
       ).createShader(Rect.fromLTWH(0, topPadding, chartWidth, chartHeight));
 
     canvas.drawPath(fillPath, fillPaint);
 
     final Paint linePaint = Paint()
-      ..color = const Color(0xFF10B981)
+      ..color = _C.primary
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     canvas.drawPath(linePath, linePaint);
 
-    final Paint dotPaint = Paint()..color = const Color(0xFF10B981);
+    final Paint dotPaint = Paint()..color = _C.primary;
 
     final Paint ringPaint = Paint()
       ..color = Colors.white
@@ -836,14 +845,13 @@ class _TrendChartPainter extends CustomPainter {
         final double y = topPadding + chartHeight * (1 - value);
 
         canvas.drawCircle(Offset(x, y), 5, dotPaint);
-
         canvas.drawCircle(Offset(x, y), 5, ringPaint);
 
         final TextPainter textPainter = TextPainter(
           text: TextSpan(
             text: _formatHargaSingkat(points[i].hargaAsli),
             style: const TextStyle(
-              color: Color(0xFF059669),
+              color: _C.primary,
               fontSize: 9,
               fontWeight: FontWeight.w700,
               fontFamily: 'Inter',
@@ -895,35 +903,35 @@ class _HargaTertinggiCard extends StatelessWidget {
                   children: [
                     Text('Update Harga Tertinggi', style: _T.h2()),
                     const SizedBox(height: 2),
-                    Text('Harga terbaru per wilayah', style: _T.bodySm()),
+                    Text(
+                      '${controller.wilayahLabel} · ${controller.periode}',
+                      style: _T.bodySm(),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 10),
-              Obx(
-                () => DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: controller.selectedWilayah.value,
-                    borderRadius: BorderRadius.circular(16),
-                    style: _T.labelCaps(color: _C.onSurfaceVariant),
-                    items: controller.wilayahOptions.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: Text(item),
-                      );
-                    }).toList(),
-                    onChanged: controller.changeWilayah,
-                  ),
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: controller.selectedWilayah.value,
+                  borderRadius: BorderRadius.circular(16),
+                  style: _T.labelCaps(color: _C.onSurfaceVariant),
+                  items: controller.wilayahOptions.map((item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(item),
+                    );
+                  }).toList(),
+                  onChanged: controller.changeWilayah,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: _C.emerald50,
+              color: _C.primaryContainer,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -932,14 +940,14 @@ class _HargaTertinggiCard extends StatelessWidget {
                   flex: 3,
                   child: Text(
                     'WILAYAH',
-                    style: _T.labelCaps(color: _C.emerald600),
+                    style: _T.labelCaps(color: _C.primary),
                   ),
                 ),
                 Expanded(
                   flex: 2,
                   child: Text(
                     'HARGA',
-                    style: _T.labelCaps(color: _C.emerald600),
+                    style: _T.labelCaps(color: _C.primary),
                     textAlign: TextAlign.right,
                   ),
                 ),
@@ -947,7 +955,7 @@ class _HargaTertinggiCard extends StatelessWidget {
                   flex: 2,
                   child: Text(
                     'PERUBAHAN',
-                    style: _T.labelCaps(color: _C.emerald600),
+                    style: _T.labelCaps(color: _C.primary),
                     textAlign: TextAlign.right,
                   ),
                 ),
@@ -955,16 +963,14 @@ class _HargaTertinggiCard extends StatelessWidget {
                   flex: 2,
                   child: Text(
                     'TGL UPDATE',
-                    style: _T.labelCaps(color: _C.emerald600),
+                    style: _T.labelCaps(color: _C.primary),
                     textAlign: TextAlign.right,
                   ),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 8),
-
           if (dataHarga.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
@@ -984,9 +990,7 @@ class _HargaTertinggiCard extends StatelessWidget {
 
               return _HargaWilayahRow(item: item, index: index, isTop: isTop);
             }),
-
           const SizedBox(height: 16),
-
           Center(
             child: Text(
               'Sumber: ${controller.sumber} · Update ${_formatTanggalUpdate(controller.updatedAt)}',
@@ -1021,14 +1025,12 @@ class _HargaWilayahRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: isTop
-            ? _C.emerald500.withOpacity(0.06)
+            ? _C.primary.withOpacity(0.06)
             : index.isEven
-            ? Colors.transparent
-            : _C.slate100.withOpacity(0.4),
+                ? Colors.transparent
+                : _C.slate100.withOpacity(0.4),
         borderRadius: BorderRadius.circular(10),
-        border: isTop
-            ? Border.all(color: _C.emerald500.withOpacity(0.2))
-            : null,
+        border: isTop ? Border.all(color: _C.primary.withOpacity(0.2)) : null,
       ),
       child: Row(
         children: [
@@ -1043,7 +1045,7 @@ class _HargaWilayahRow extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: _C.emerald500,
+                      color: _C.primary,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -1060,8 +1062,8 @@ class _HargaWilayahRow extends StatelessWidget {
                     item.wilayah,
                     style: isTop
                         ? _T
-                              .bodyMd(color: _C.emerald600)
-                              .copyWith(fontWeight: FontWeight.w700)
+                            .bodyMd(color: _C.primary)
+                            .copyWith(fontWeight: FontWeight.w700)
                         : _T.bodyMd(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1070,20 +1072,18 @@ class _HargaWilayahRow extends StatelessWidget {
               ],
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Text(
               _formatHarga(item.harga),
               style: _T
-                  .bodyMd(color: isTop ? _C.emerald600 : _C.onSurface)
+                  .bodyMd(color: isTop ? _C.primary : _C.onSurface)
                   .copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.right,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Row(
@@ -1093,13 +1093,13 @@ class _HargaWilayahRow extends StatelessWidget {
                   isNaik
                       ? Icons.arrow_drop_up_rounded
                       : isTurun
-                      ? Icons.arrow_drop_down_rounded
-                      : Icons.remove_rounded,
+                          ? Icons.arrow_drop_down_rounded
+                          : Icons.remove_rounded,
                   color: isNaik
-                      ? _C.emerald500
+                      ? _C.primary
                       : isTurun
-                      ? _C.red400
-                      : _C.slate500,
+                          ? _C.red400
+                          : _C.slate500,
                   size: 18,
                 ),
                 Flexible(
@@ -1110,10 +1110,10 @@ class _HargaWilayahRow extends StatelessWidget {
                     style: _T
                         .bodySm(
                           color: isNaik
-                              ? _C.emerald600
+                              ? _C.primary
                               : isTurun
-                              ? _C.red400
-                              : _C.slate500,
+                                  ? _C.red400
+                                  : _C.slate500,
                         )
                         .copyWith(fontWeight: FontWeight.w600),
                     maxLines: 1,
@@ -1123,7 +1123,6 @@ class _HargaWilayahRow extends StatelessWidget {
               ],
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Text(
@@ -1152,14 +1151,14 @@ class _GlassCard extends StatelessWidget {
       width: double.infinity,
       padding: padding ?? const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.25)),
+        border: Border.all(color: _C.slate100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
