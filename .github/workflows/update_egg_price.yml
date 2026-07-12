@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
 
   schedule:
+    # WIB = UTC + 7
+    # 00:17 UTC = 07:17 WIB
+    # 06:17 UTC = 13:17 WIB
+    # 12:17 UTC = 19:17 WIB
     - cron: "17 0,6,12 * * *"
 
 permissions:
@@ -41,5 +45,6 @@ jobs:
           git config --global user.email "github-actions@github.com"
 
           git add bigdata/output/report_harga_telur.json
+
           git diff --cached --quiet || git commit -m "Update report harga telur"
           git push
