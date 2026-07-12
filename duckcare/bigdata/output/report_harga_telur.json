@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "message": "Data report harga telur berhasil diperbarui",
+  "code": 200,
+  "data": {
+    "updated_at": "2026-07-13T00:30:55.991449+07:00",
+    "sumber": "https://sunegg.id/indeks-harga-telur",
+    "satuan": "Rp/kg",
+    "periode": "0 data terakhir",
+    "wilayah_aktif": "Semua Wilayah",
+    "summary": {
+      "harga_terakhir": 0,
+      "harga_sebelumnya": 0,
+      "harga_rata_rata": 0,
+      "harga_tertinggi_nasional": 0,
+      "harga_terendah_nasional": 0,
+      "persentase_kenaikan": 0,
+      "indeks": 0,
+      "volatilitas_pct": 0,
+      "jumlah_data": 0
+    },
+    "trend": [],
+    "harga_tertinggi": [],
+    "wilayah_options": [
+      "Semua Wilayah",
+      "Jabar-DKI",
+      "Jawa Tengah",
+      "Jawa Timur",
+      "Luar Jawa"
+    ]
+  }
+}
