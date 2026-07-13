@@ -3,24 +3,234 @@
   "message": "Data report harga telur berhasil diperbarui",
   "code": 200,
   "data": {
-    "updated_at": "2026-07-13T00:30:55.991449+07:00",
+    "updated_at": "2026-07-12T12:11:09.418370",
     "sumber": "https://sunegg.id/indeks-harga-telur",
     "satuan": "Rp/kg",
-    "periode": "0 data terakhir",
+    "periode": "30 data terakhir",
     "wilayah_aktif": "Semua Wilayah",
     "summary": {
-      "harga_terakhir": 0,
-      "harga_sebelumnya": 0,
-      "harga_rata_rata": 0,
-      "harga_tertinggi_nasional": 0,
-      "harga_terendah_nasional": 0,
-      "persentase_kenaikan": 0,
-      "indeks": 0,
-      "volatilitas_pct": 0,
-      "jumlah_data": 0
+      "harga_terakhir": 22145,
+      "harga_sebelumnya": 22190,
+      "harga_rata_rata": 24373,
+      "harga_tertinggi_nasional": 25603,
+      "harga_terendah_nasional": 21974,
+      "persentase_kenaikan": -12.6,
+      "indeks": 90.38,
+      "volatilitas_pct": 0.0,
+      "jumlah_data": 30
     },
-    "trend": [],
-    "harga_tertinggi": [],
+    "trend": [
+      {
+        "tanggal": "2026-04-23",
+        "label": "23 Apr",
+        "value": 0.84,
+        "harga_asli": 25327
+      },
+      {
+        "tanggal": "2026-04-24",
+        "label": "24 Apr",
+        "value": 0.83,
+        "harga_asli": 25273
+      },
+      {
+        "tanggal": "2026-04-25",
+        "label": "25 Apr",
+        "value": 0.9,
+        "harga_asli": 25603
+      },
+      {
+        "tanggal": "2026-04-26",
+        "label": "26 Apr",
+        "value": 0.86,
+        "harga_asli": 25422
+      },
+      {
+        "tanggal": "2026-04-27",
+        "label": "27 Apr",
+        "value": 0.79,
+        "harga_asli": 25051
+      },
+      {
+        "tanggal": "2026-04-28",
+        "label": "28 Apr",
+        "value": 0.83,
+        "harga_asli": 25257
+      },
+      {
+        "tanggal": "2026-04-29",
+        "label": "29 Apr",
+        "value": 0.76,
+        "harga_asli": 24945
+      },
+      {
+        "tanggal": "2026-04-30",
+        "label": "30 Apr",
+        "value": 0.75,
+        "harga_asli": 24891
+      },
+      {
+        "tanggal": "2026-05-01",
+        "label": "01 Mei",
+        "value": 0.78,
+        "harga_asli": 25018
+      },
+      {
+        "tanggal": "2026-05-02",
+        "label": "02 Mei",
+        "value": 0.65,
+        "harga_asli": 24412
+      },
+      {
+        "tanggal": "2026-05-03",
+        "label": "03 Mei",
+        "value": 0.65,
+        "harga_asli": 24407
+      },
+      {
+        "tanggal": "2026-05-04",
+        "label": "04 Mei",
+        "value": 0.7,
+        "harga_asli": 24650
+      },
+      {
+        "tanggal": "2026-05-05",
+        "label": "05 Mei",
+        "value": 0.67,
+        "harga_asli": 24481
+      },
+      {
+        "tanggal": "2026-05-06",
+        "label": "06 Mei",
+        "value": 0.73,
+        "harga_asli": 24767
+      },
+      {
+        "tanggal": "2026-05-07",
+        "label": "07 Mei",
+        "value": 0.65,
+        "harga_asli": 24400
+      },
+      {
+        "tanggal": "2026-05-08",
+        "label": "08 Mei",
+        "value": 0.7,
+        "harga_asli": 24645
+      },
+      {
+        "tanggal": "2026-05-09",
+        "label": "09 Mei",
+        "value": 0.75,
+        "harga_asli": 24900
+      },
+      {
+        "tanggal": "2026-05-10",
+        "label": "10 Mei",
+        "value": 0.65,
+        "harga_asli": 24413
+      },
+      {
+        "tanggal": "2026-05-11",
+        "label": "11 Mei",
+        "value": 0.66,
+        "harga_asli": 24434
+      },
+      {
+        "tanggal": "2026-05-12",
+        "label": "12 Mei",
+        "value": 0.57,
+        "harga_asli": 23999
+      },
+      {
+        "tanggal": "2026-05-13",
+        "label": "13 Mei",
+        "value": 0.6,
+        "harga_asli": 24170
+      },
+      {
+        "tanggal": "2026-05-14",
+        "label": "14 Mei",
+        "value": 0.63,
+        "harga_asli": 24284
+      },
+      {
+        "tanggal": "2026-05-15",
+        "label": "15 Mei",
+        "value": 0.55,
+        "harga_asli": 23907
+      },
+      {
+        "tanggal": "2026-05-16",
+        "label": "16 Mei",
+        "value": 0.62,
+        "harga_asli": 24244
+      },
+      {
+        "tanggal": "2026-05-17",
+        "label": "17 Mei",
+        "value": 0.56,
+        "harga_asli": 23940
+      },
+      {
+        "tanggal": "2026-05-18",
+        "label": "18 Mei",
+        "value": 0.58,
+        "harga_asli": 24040
+      },
+      {
+        "tanggal": "2026-06-04",
+        "label": "04 Jun",
+        "value": 0.57,
+        "harga_asli": 23997
+      },
+      {
+        "tanggal": "2026-06-26",
+        "label": "26 Jun",
+        "value": 0.15,
+        "harga_asli": 21974
+      },
+      {
+        "tanggal": "2026-07-04",
+        "label": "04 Jul",
+        "value": 0.19,
+        "harga_asli": 22190
+      },
+      {
+        "tanggal": "2026-07-12",
+        "label": "12 Jul",
+        "value": 0.19,
+        "harga_asli": 22145
+      }
+    ],
+    "harga_tertinggi": [
+      {
+        "tanggal": "12 Jul",
+        "wilayah": "Jabar-DKI",
+        "harga": 25000,
+        "harga_sebelumnya": 25000,
+        "selisih": 0
+      },
+      {
+        "tanggal": "12 Jul",
+        "wilayah": "Jawa Tengah",
+        "harga": 25000,
+        "harga_sebelumnya": 25000,
+        "selisih": 0
+      },
+      {
+        "tanggal": "12 Jul",
+        "wilayah": "Jawa Timur",
+        "harga": 25000,
+        "harga_sebelumnya": 25000,
+        "selisih": 0
+      },
+      {
+        "tanggal": "12 Jul",
+        "wilayah": "Luar Jawa",
+        "harga": 25000,
+        "harga_sebelumnya": 25000,
+        "selisih": 0
+      }
+    ],
     "wilayah_options": [
       "Semua Wilayah",
       "Jabar-DKI",
