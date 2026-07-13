@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
 
   schedule:
+    # WIB = UTC + 7
+    # 00:17 UTC = 07:17 WIB
+    # 06:17 UTC = 13:17 WIB
+    # 12:17 UTC = 19:17 WIB
     - cron: "17 0,6,12 * * *"
 
 permissions:
@@ -14,20 +18,89 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ambil kode repository
+      # =====================================================
+      # 1. AMBIL KODE DARI BRANCH BENING
+      # =====================================================
+      - name: Ambil kode branch bening
         uses: actions/checkout@v4
+        with:
+          ref: bening
+          fetch-depth: 0
 
+      # =====================================================
+      # 2. SETUP PYTHON
+      # =====================================================
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # =====================================================
+      # 3. INSTALL LIBRARY
+      # Dijalankan dari folder duckcare
+      # =====================================================
       - name: Install library Python
+        working-directory: duckcare
         run: |
           python -m pip install --upgrade pip
           pip install -r bigdata/requirements.txt
 
+      # =====================================================
+      # 4. CEK KONEKSI DAN DATA MONGODB
+      # =====================================================
+      - name: Cek data MongoDB
+        working-directory: duckcare
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGO_DB_NAME: harga_telur_db
+          MONGO_COLLECTION: harga_harian
+        run: |
+          python - <<'PY'
+          import os
+          from pymongo import MongoClient
+
+          uri = os.environ["MONGODB_URI"]
+          db_name = os.environ["MONGO_DB_NAME"]
+          collection_name = os.environ["MONGO_COLLECTION"]
+
+          client = MongoClient(
+              uri,
+              serverSelectionTimeoutMS=15000
+          )
+
+          client.admin.command("ping")
+
+          collection = client[db_name][collection_name]
+
+          jumlah = collection.count_documents({})
+          contoh = collection.find_one({}, {"_id": 0})
+
+          print("Koneksi MongoDB berhasil")
+          print("Database:", db_name)
+          print("Collection:", collection_name)
+          print("Jumlah dokumen:", jumlah)
+
+          if contoh:
+              print("Field dokumen:", list(contoh.keys()))
+          else:
+              print("Tidak ada dokumen pada collection")
+
+          if jumlah <= 0:
+              raise SystemExit(
+                  "ERROR: Collection harga_harian masih kosong"
+              )
+
+          client.close()
+          PY
+
+      # =====================================================
+      # 5. JALANKAN BIG DATA
+      #
+      # working-directory membuat Path("bigdata/output")
+      # menjadi duckcare/bigdata/output
+      # =====================================================
       - name: Jalankan update harga telur
+        working-directory: duckcare
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGO_DB_NAME: harga_telur_db
@@ -35,11 +108,85 @@ jobs:
         run: |
           python bigdata/update_egg_price.py
 
+      # =====================================================
+      # 6. CEK FILE OUTPUT
+      # =====================================================
+      - name: Tampilkan file report
+        run: |
+          echo "Isi folder output:"
+          ls -la duckcare/bigdata/output
+
+          echo "Isi report JSON:"
+          cat duckcare/bigdata/output/report_harga_telur.json
+
+      # =====================================================
+      # 7. VALIDASI REPORT
+      # =====================================================
+      - name: Validasi report JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          file_path = Path(
+              "duckcare/bigdata/output/report_harga_telur.json"
+          )
+
+          if not file_path.exists():
+              raise SystemExit(
+                  f"ERROR: File report tidak ditemukan: {file_path}"
+              )
+
+          with file_path.open(
+              "r",
+              encoding="utf-8"
+          ) as file:
+              report = json.load(file)
+
+          if report.get("success") is not True:
+              raise SystemExit(
+                  "ERROR: Nilai success pada report bukan true"
+              )
+
+          summary = (
+              report
+              .get("data", {})
+              .get("summary", {})
+          )
+
+          jumlah_data = summary.get("jumlah_data", 0)
+          harga_terakhir = summary.get("harga_terakhir", 0)
+
+          print("Jumlah data:", jumlah_data)
+          print("Harga terakhir:", harga_terakhir)
+
+          if jumlah_data <= 0:
+              raise SystemExit(
+                  "ERROR: jumlah_data masih 0"
+              )
+
+          if harga_terakhir <= 0:
+              raise SystemExit(
+                  "ERROR: harga_terakhir masih 0"
+              )
+
+          print("Report berhasil divalidasi")
+          PY
+
+      # =====================================================
+      # 8. COMMIT KE BRANCH BENING
+      # =====================================================
       - name: Commit report JSON terbaru
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add bigdata/output/report_harga_telur.json
-          git diff --cached --quiet || git commit -m "Update report harga telur"
-          git push
+          git add duckcare/bigdata/output/report_harga_telur.json
+
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan report untuk di-commit"
+          else
+            git commit -m "Update report harga telur"
+            git push origin HEAD:bening
+          fi
