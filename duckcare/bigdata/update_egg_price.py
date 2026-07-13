@@ -1,600 +1,439 @@
-# -*- coding: utf-8 -*-
 import os
 import re
 import json
-import math
-from pathlib import Path
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
-from pymongo import MongoClient, DESCENDING
+from pymongo import MongoClient
 
 
-# =========================
-# KONFIGURASI
-# =========================
+# ==========================================================
+# KONFIGURASI BIG DATA DUCKCARE
+# ==========================================================
+
+MONGODB_URI = os.environ.get("MONGODB_URI")
+
+MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME", "duckcare_bigdata")
+MONGO_COLLECTION = os.environ.get("MONGO_COLLECTION", "harga_telur")
 
 SUNEGG_URL = "https://sunegg.id/indeks-harga-telur"
 
-DB_NAME = os.environ.get("MONGO_DB_NAME", "harga_telur_db")
-COLLECTION_NAME = os.environ.get("MONGO_COLLECTION", "harga_harian")
-MONGODB_URI = os.environ.get("MONGODB_URI", "")
+# Harga dasar untuk menghitung indeks harga telur
+HARGA_DASAR = 24501
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = SCRIPT_DIR / "output"
+OUTPUT_DIR = Path("bigdata/output")
 OUTPUT_FILE = OUTPUT_DIR / "report_harga_telur.json"
 
-WILAYAH_DEFAULT = [
-    "Jabar-DKI",
-    "Jawa Tengah",
-    "Jawa Timur",
-    "Luar Jawa",
-]
 
-TZ_JAKARTA = ZoneInfo("Asia/Jakarta")
+# ==========================================================
+# HEADER REQUEST KE WEBSITE
+# ==========================================================
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://www.google.com/",
+    "Connection": "keep-alive",
+}
+# ==========================================================
+# FUNGSI SCRAPING SUNEGG
+# ==========================================================
 
-# =========================
-# HELPER DASAR
-# =========================
-
-def log(message):
-    now = datetime.now(TZ_JAKARTA).strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{now}] {message}")
-
-
-def today_jakarta():
-    return datetime.now(TZ_JAKARTA).strftime("%Y-%m-%d")
-
-
-def now_iso():
-    return datetime.now(TZ_JAKARTA).isoformat()
-
-
-def to_int(value, default=0):
+def fetch_halaman(url: str):
     try:
-        if value is None:
-            return default
+        response = requests.get(url, headers=HEADERS, timeout=20)
+        response.raise_for_status()
 
-        if isinstance(value, int):
-            return value
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        if isinstance(value, float):
-            return int(round(value))
+        print(f"Berhasil mengambil halaman: {url}")
+        return soup
 
-        text = str(value)
-        text = text.replace("Rp", "")
-        text = text.replace("rp", "")
-        text = text.replace(".", "")
-        text = text.replace(",", "")
-        text = text.strip()
-
-        return int(text)
-    except Exception:
-        return default
+    except requests.RequestException as error:
+        print(f"Gagal mengambil halaman SunEgg: {error}")
+        return None
 
 
-def safe_round(value, digit=2):
+def parse_angka(teks: str):
+    if not teks:
+        return None
+
+    teks_bersih = re.sub(r"[^\d,.]", "", str(teks))
+    teks_bersih = teks_bersih.replace(".", "").replace(",", ".")
+
     try:
-        if value is None:
-            return 0
-        if math.isnan(value):
-            return 0
-        return round(value, digit)
-    except Exception:
-        return 0
+        return float(teks_bersih)
+    except ValueError:
+        return None
 
 
-def format_label_tanggal(tanggal):
-    try:
-        date_obj = datetime.strptime(str(tanggal), "%Y-%m-%d")
-    except Exception:
-        return str(tanggal)
+def ambil_harga_nasional(soup):
+    teks_halaman = soup.get_text(separator=" ")
 
-    bulan = {
-        1: "Jan",
-        2: "Feb",
-        3: "Mar",
-        4: "Apr",
-        5: "Mei",
-        6: "Jun",
-        7: "Jul",
-        8: "Agu",
-        9: "Sep",
-        10: "Okt",
-        11: "Nov",
-        12: "Des",
-    }
-
-    return f"{date_obj.day:02d} {bulan[date_obj.month]}"
-
-
-def normalize_chart_value(harga, min_harga, max_harga):
-    if max_harga == min_harga:
-        return 0.5
-
-    value = (harga - min_harga) / (max_harga - min_harga)
-
-    # Supaya grafik tidak terlalu nempel bawah/atas
-    return safe_round(0.15 + (value * 0.75), 2)
-
-# =========================
-# AMBIL DATA DARI WEB
-# =========================
-
-def fetch_halaman(url):
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/124.0.0.0 Safari/537.36"
-        ),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Connection": "keep-alive",
-    }
-
-    response = requests.get(
-        url,
-        headers=headers,
-        timeout=30,
+    pola_saat_ini = re.search(
+        r"Saat\s*Ini\s*Rp([\d.,]+)/kg",
+        teks_halaman,
+        re.IGNORECASE
     )
 
-    if response.status_code != 200:
-        raise Exception(f"Gagal mengambil halaman SunEgg: {response.status_code}")
+    if pola_saat_ini:
+        return parse_angka(pola_saat_ini.group(1))
 
-    return response.text
+    for elemen in soup.find_all(True):
+        teks = elemen.get_text(strip=True)
 
+        if "Rp" in teks and "/kg" in teks:
+            angka = parse_angka(teks)
 
-def ambil_angka_harga(text):
-    if not text:
-        return []
+            if angka and 15000 < angka < 40000:
+                return angka
 
-    pola = r"(?:Rp\s*)?(\d{1,3}(?:[.,]\d{3})+|\d{5,6})"
-    matches = re.findall(pola, text)
+    return None
 
-    hasil = []
+def ambil_statistik_harga(soup):
+    teks_halaman = soup.get_text(separator=" ")
 
-    for item in matches:
-        angka = to_int(item)
+    statistik = {
+        "harga_tertinggi": None,
+        "harga_terendah": None,
+        "harga_rata2": None,
+        "volatilitas_pct": None,
+    }
 
-        if 10000 <= angka <= 100000:
-            hasil.append(angka)
+    pola_tertinggi = re.search(
+        r"Tertinggi\s*Rp([\d.,]+)/kg",
+        teks_halaman,
+        re.IGNORECASE
+    )
 
-    return hasil
+    pola_terendah = re.search(
+        r"Terendah\s*Rp([\d.,]+)/kg",
+        teks_halaman,
+        re.IGNORECASE
+    )
 
+    pola_rata2 = re.search(
+        r"Rata-rata\s*Rp([\d.,]+)/kg",
+        teks_halaman,
+        re.IGNORECASE
+    )
 
-def cari_harga_dekat_wilayah(text, wilayah):
-    if not text or not wilayah:
-        return None
+    pola_volatilitas = re.search(
+        r"Volatilitas\s*([\d.]+)%",
+        teks_halaman,
+        re.IGNORECASE
+    )
 
-    index = text.lower().find(wilayah.lower())
+    if pola_tertinggi:
+        statistik["harga_tertinggi"] = parse_angka(pola_tertinggi.group(1))
 
-    if index == -1:
-        return None
+    if pola_terendah:
+        statistik["harga_terendah"] = parse_angka(pola_terendah.group(1))
 
-    potongan = text[index:index + 300]
-    angka = ambil_angka_harga(potongan)
+    if pola_rata2:
+        statistik["harga_rata2"] = parse_angka(pola_rata2.group(1))
 
-    if not angka:
-        return None
+    if pola_volatilitas:
+        statistik["volatilitas_pct"] = float(pola_volatilitas.group(1))
 
-    return angka[0]
+    return statistik
 
+def ambil_harga_regional(soup):
+    teks_halaman = soup.get_text(separator=" ").lower()
+
+    regional = {}
+
+    wilayah_map = {
+        "Jabar-DKI": ["jabar", "dki", "jakarta", "jawa barat"],
+        "Jawa Tengah": ["jateng", "jawa tengah"],
+        "Jawa Timur": ["jatim", "jawa timur"],
+        "Luar Jawa": ["luar jawa", "sumatra", "kalimantan", "sulawesi"],
+    }
+
+    for nama_wilayah, daftar_kata_kunci in wilayah_map.items():
+        for kata_kunci in daftar_kata_kunci:
+            pola = re.search(
+                rf"{kata_kunci}[^\n]*(\d{{2,3}}\.\d{{3}})",
+                teks_halaman
+            )
+
+            if pola:
+                regional[nama_wilayah] = parse_angka(pola.group(1))
+                break
+
+    return regional
 
 def scrape_indeks_harga():
-    """
-    Mengambil data dari SunEgg.
+    soup = fetch_halaman(SUNEGG_URL)
 
-    Catatan:
-    Jika GitHub Actions kena 403, fungsi ini akan gagal.
-    Script tetap lanjut membuat report dari data MongoDB terakhir.
-    """
+    if soup is None:
+        raise ValueError("Halaman SunEgg tidak berhasil diambil.")
 
-    log("Mulai mengambil data dari SunEgg")
+    harga_nasional = ambil_harga_nasional(soup)
 
-    html = fetch_halaman(SUNEGG_URL)
+    if harga_nasional is None:
+        raise ValueError("Harga nasional tidak ditemukan dari halaman SunEgg.")
 
-    soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text(" ", strip=True)
+    statistik = ambil_statistik_harga(soup)
+    regional = ambil_harga_regional(soup)
 
-    semua_harga = ambil_angka_harga(text)
-
-    if not semua_harga:
-        raise Exception("Tidak menemukan angka harga pada halaman SunEgg")
-
-    tanggal = today_jakarta()
-    created_at = now_iso()
-
-    data = []
-
-    harga_nasional = semua_harga[0]
-
-    data.append({
-        "tanggal": tanggal,
-        "wilayah": "Nasional",
-        "harga": harga_nasional,
+    data = {
+        "tanggal": datetime.now().strftime("%Y-%m-%d"),
+        "timestamp": datetime.now().isoformat(),
+        "harga_nasional": harga_nasional,
+        "harga_tertinggi": statistik["harga_tertinggi"],
+        "harga_terendah": statistik["harga_terendah"],
+        "harga_rata2": statistik["harga_rata2"],
+        "volatilitas_pct": statistik["volatilitas_pct"],
+        "indeks": round((harga_nasional / HARGA_DASAR) * 100, 2),
+        "regional": regional,
         "sumber": SUNEGG_URL,
-        "created_at": created_at,
-        "updated_at": created_at,
-    })
+    }
 
-    for wilayah in WILAYAH_DEFAULT:
-        harga_wilayah = cari_harga_dekat_wilayah(text, wilayah)
-
-        if harga_wilayah is not None:
-            data.append({
-                "tanggal": tanggal,
-                "wilayah": wilayah,
-                "harga": harga_wilayah,
-                "sumber": SUNEGG_URL,
-                "created_at": created_at,
-                "updated_at": created_at,
-            })
-
-    log(f"Data hasil scraping: {len(data)} record")
+    print("Data hasil scraping:")
+    print(json.dumps(data, indent=2, ensure_ascii=False))
 
     return data
 
-
-# =========================
-# MONGODB
-# =========================
+# ==========================================================
+# FUNGSI KONEKSI MONGODB
+# ==========================================================
 
 def koneksi_mongodb():
     if not MONGODB_URI:
-        raise Exception("MONGODB_URI belum diatur di environment variable")
+        raise ValueError("MONGODB_URI belum tersedia. Isi dulu di GitHub Secrets.")
 
-    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=20000)
-
-    # Test koneksi
-    client.admin.command("ping")
-
-    db = client[DB_NAME]
-    collection = db[COLLECTION_NAME]
-
-    log("Koneksi MongoDB Atlas berhasil")
-
-    return client, collection
-
-
-def simpan_ke_mongodb(collection, data):
-    if not data:
-        log("Tidak ada data baru untuk disimpan ke MongoDB")
-        return
-
-    total_upsert = 0
-
-    for item in data:
-        collection.update_one(
-            {
-                "tanggal": item["tanggal"],
-                "wilayah": item["wilayah"],
-            },
-            {
-                "$set": {
-                    "harga": item["harga"],
-                    "sumber": item.get("sumber", SUNEGG_URL),
-                    "updated_at": item.get("updated_at", now_iso()),
-                },
-                "$setOnInsert": {
-                    "created_at": item.get("created_at", now_iso()),
-                },
-            },
-            upsert=True,
-        )
-
-        total_upsert += 1
-
-    log(f"Data berhasil disimpan/update ke MongoDB: {total_upsert} record")
-
-# =========================
-# AMBIL DATA UNTUK REPORT
-# =========================
-
-def ambil_data_nasional(collection, limit=30):
-    cursor = collection.find(
-        {
-            "wilayah": "Nasional",
-            "harga": {
-                "$ne": None,
-            },
-        }
-    ).sort("tanggal", DESCENDING).limit(limit)
-
-    data = list(cursor)
-    data.reverse()
-
-    return data
-
-
-def ambil_data_regional_terbaru(collection):
-    cursor = collection.find(
-        {
-            "wilayah": {
-                "$ne": "Nasional",
-            },
-            "harga": {
-                "$ne": None,
-            },
-        }
-    ).sort("tanggal", DESCENDING)
-
-    data_per_wilayah = {}
-
-    for item in cursor:
-        wilayah = item.get("wilayah", "")
-
-        if wilayah and wilayah not in data_per_wilayah:
-            data_per_wilayah[wilayah] = item
-
-    return list(data_per_wilayah.values())
-
-
-def ambil_harga_sebelumnya_wilayah(collection, wilayah, tanggal_terbaru):
-    item = collection.find_one(
-        {
-            "wilayah": wilayah,
-            "tanggal": {
-                "$lt": tanggal_terbaru,
-            },
-            "harga": {
-                "$ne": None,
-            },
-        },
-        sort=[
-            ("tanggal", DESCENDING),
-        ],
+    client = MongoClient(
+        MONGODB_URI,
+        serverSelectionTimeoutMS=15000
     )
 
-    if not item:
-        return None
+    client.admin.command("ping")
 
-    return to_int(item.get("harga"))
+    print("Koneksi MongoDB Atlas berhasil.")
 
+    return client
 
-def buat_summary(data_nasional):
-    harga_list = [
-        to_int(item.get("harga"))
-        for item in data_nasional
-        if to_int(item.get("harga")) > 0
-    ]
+def simpan_ke_mongodb(client, data):
+    database = client[MONGO_DB_NAME]
+    collection = database[MONGO_COLLECTION]
 
-    if not harga_list:
-        return {
-            "harga_terakhir": 0,
-            "harga_sebelumnya": 0,
-            "harga_rata_rata": 0,
-            "harga_tertinggi_nasional": 0,
-            "harga_terendah_nasional": 0,
-            "persentase_kenaikan": 0,
-            "indeks": 0,
-            "volatilitas_pct": 0,
-            "jumlah_data": 0,
+    hasil = collection.update_one(
+        {"tanggal": data["tanggal"]},
+        {"$set": data},
+        upsert=True
+    )
+
+    if hasil.upserted_id:
+        print(f"Data baru berhasil disimpan: {data['tanggal']}")
+    else:
+        print(f"Data tanggal {data['tanggal']} berhasil diperbarui.")
+
+        # ==========================================================
+# FUNGSI FORMAT REPORT
+# ==========================================================
+
+def format_label_tanggal(tanggal_text):
+    try:
+        tanggal = datetime.strptime(tanggal_text, "%Y-%m-%d")
+
+        nama_bulan = {
+            1: "Jan",
+            2: "Feb",
+            3: "Mar",
+            4: "Apr",
+            5: "Mei",
+            6: "Jun",
+            7: "Jul",
+            8: "Agu",
+            9: "Sep",
+            10: "Okt",
+            11: "Nov",
+            12: "Des",
         }
 
-    harga_terakhir = harga_list[-1]
-    harga_sebelumnya = harga_list[-2] if len(harga_list) >= 2 else harga_terakhir
-    harga_awal = harga_list[0]
+        return f"{tanggal.day:02d} {nama_bulan[tanggal.month]}"
 
-    harga_rata_rata = round(sum(harga_list) / len(harga_list))
-    harga_tertinggi = max(harga_list)
-    harga_terendah = min(harga_list)
+    except Exception:
+        return tanggal_text
+
+
+def normalize_trend_value(harga, min_harga, max_harga):
+    harga = float(harga)
+    min_harga = float(min_harga)
+    max_harga = float(max_harga)
+
+    if max_harga <= min_harga:
+        return 0.5
+
+    nilai = 0.15 + ((harga - min_harga) / (max_harga - min_harga)) * 0.75
+
+    return round(nilai, 2)
+
+def buat_report_json(client, jumlah_hari=30):
+    database = client[MONGO_DB_NAME]
+    collection = database[MONGO_COLLECTION]
+
+    cursor = collection.find(
+        {},
+        {"_id": 0}
+    ).sort("tanggal", -1).limit(jumlah_hari)
+
+    data_desc = list(cursor)
+
+    if len(data_desc) == 0:
+        raise ValueError("Data MongoDB masih kosong. Tidak bisa membuat report.")
+
+    data_urut = list(reversed(data_desc))
+
+    data_awal = data_urut[0]
+    data_terbaru = data_urut[-1]
+
+    if len(data_urut) > 1:
+        data_sebelumnya = data_urut[-2]
+    else:
+        data_sebelumnya = data_terbaru
+
+    daftar_harga = []
+
+    for item in data_urut:
+        harga = item.get("harga_nasional", 0)
+
+        if harga:
+            daftar_harga.append(float(harga))
+
+    harga_min = min(daftar_harga)
+    harga_max = max(daftar_harga)
+    harga_rata_rata = sum(daftar_harga) / len(daftar_harga)
+
+    harga_awal = float(data_awal.get("harga_nasional", 0))
+    harga_terbaru = float(data_terbaru.get("harga_nasional", 0))
 
     if harga_awal > 0:
-        persentase_kenaikan = ((harga_terakhir - harga_awal) / harga_awal) * 100
+        persentase_kenaikan = ((harga_terbaru - harga_awal) / harga_awal) * 100
     else:
         persentase_kenaikan = 0
 
-    if harga_rata_rata > 0:
-        indeks = (harga_terakhir / harga_rata_rata) * 100
-    else:
-        indeks = 0
-
-    if harga_rata_rata > 0:
-        volatilitas_pct = ((harga_tertinggi - harga_terendah) / harga_rata_rata) * 100
-    else:
-        volatilitas_pct = 0
-
-    return {
-        "harga_terakhir": harga_terakhir,
-        "harga_sebelumnya": harga_sebelumnya,
-        "harga_rata_rata": harga_rata_rata,
-        "harga_tertinggi_nasional": harga_tertinggi,
-        "harga_terendah_nasional": harga_terendah,
-        "persentase_kenaikan": safe_round(persentase_kenaikan, 1),
-        "indeks": safe_round(indeks, 2),
-        "volatilitas_pct": safe_round(volatilitas_pct, 2),
-        "jumlah_data": len(harga_list),
-    }
-
-
-def buat_trend(data_nasional):
-    harga_list = [
-        to_int(item.get("harga"))
-        for item in data_nasional
-        if to_int(item.get("harga")) > 0
-    ]
-
-    if not harga_list:
-        return []
-
-    min_harga = min(harga_list)
-    max_harga = max(harga_list)
-
     trend = []
 
-    for item in data_nasional:
-        tanggal = str(item.get("tanggal", ""))
-        harga = to_int(item.get("harga"))
-
-        if not tanggal or harga <= 0:
-            continue
+    for item in data_urut:
+        harga_asli = int(round(float(item.get("harga_nasional", 0))))
 
         trend.append({
-            "tanggal": tanggal,
-            "label": format_label_tanggal(tanggal),
-            "value": normalize_chart_value(harga, min_harga, max_harga),
-            "harga_asli": harga,
+            "tanggal": item.get("tanggal", ""),
+            "label": format_label_tanggal(item.get("tanggal", "")),
+            "value": normalize_trend_value(harga_asli, harga_min, harga_max),
+            "harga_asli": harga_asli,
         })
 
-    return trend
+    regional_terbaru = data_terbaru.get("regional", {}) or {}
+    regional_sebelumnya = data_sebelumnya.get("regional", {}) or {}
 
+    harga_tertinggi = []
 
-def buat_harga_tertinggi(collection, data_regional):
-    hasil = []
+    if len(regional_terbaru) > 0:
+        for wilayah, harga in regional_terbaru.items():
+            harga_sekarang = int(round(float(harga)))
+            harga_lama = int(round(float(regional_sebelumnya.get(wilayah, harga))))
 
-    for item in data_regional:
-        tanggal = str(item.get("tanggal", ""))
-        wilayah = str(item.get("wilayah", ""))
-        harga = to_int(item.get("harga"))
+            harga_tertinggi.append({
+                "tanggal": format_label_tanggal(data_terbaru.get("tanggal", "")),
+                "wilayah": wilayah,
+                "harga": harga_sekarang,
+                "harga_sebelumnya": harga_lama,
+                "selisih": harga_sekarang - harga_lama,
+            })
+    else:
+        harga_sekarang = int(round(harga_terbaru))
+        harga_lama = int(round(float(data_sebelumnya.get("harga_nasional", harga_terbaru))))
 
-        if not tanggal or not wilayah or harga <= 0:
-            continue
-
-        harga_sebelumnya = ambil_harga_sebelumnya_wilayah(
-            collection,
-            wilayah,
-            tanggal,
-        )
-
-        if harga_sebelumnya is None:
-            harga_sebelumnya = harga
-
-        selisih = harga - harga_sebelumnya
-
-        hasil.append({
-            "tanggal": format_label_tanggal(tanggal),
-            "wilayah": wilayah,
-            "harga": harga,
-            "harga_sebelumnya": harga_sebelumnya,
-            "selisih": selisih,
+        harga_tertinggi.append({
+            "tanggal": format_label_tanggal(data_terbaru.get("tanggal", "")),
+            "wilayah": "Nasional",
+            "harga": harga_sekarang,
+            "harga_sebelumnya": harga_lama,
+            "selisih": harga_sekarang - harga_lama,
         })
 
-    hasil.sort(key=lambda x: x["harga"], reverse=True)
+    harga_tertinggi.sort(key=lambda item: item["harga"], reverse=True)
 
-    return hasil
+    wilayah_options = ["Semua Wilayah"] + list(regional_terbaru.keys())
 
-# =========================
-# BUAT FILE JSON REPORT
-# =========================
-
-def buat_report_json(collection):
-    data_nasional = ambil_data_nasional(collection, limit=30)
-    data_regional = ambil_data_regional_terbaru(collection)
-
-    summary = buat_summary(data_nasional)
-    trend = buat_trend(data_nasional)
-    harga_tertinggi = buat_harga_tertinggi(collection, data_regional)
-
-    wilayah_options = ["Semua Wilayah"]
-
-    for item in harga_tertinggi:
-        wilayah = item.get("wilayah")
-
-        if wilayah and wilayah not in wilayah_options:
-            wilayah_options.append(wilayah)
-
-    if len(wilayah_options) == 1:
-        wilayah_options.extend(WILAYAH_DEFAULT)
-
-    report_data = {
-        "updated_at": now_iso(),
-        "sumber": SUNEGG_URL,
-        "satuan": "Rp/kg",
-        "periode": f"{len(trend)} data terakhir",
-        "wilayah_aktif": "Semua Wilayah",
-        "summary": summary,
-        "trend": trend,
-        "harga_tertinggi": harga_tertinggi,
-        "wilayah_options": wilayah_options,
-    }
-
-    response = {
+    report = {
         "success": True,
         "message": "Data report harga telur berhasil diperbarui",
         "code": 200,
-        "data": report_data,
+        "data": {
+            "updated_at": data_terbaru.get("timestamp", ""),
+            "sumber": data_terbaru.get("sumber", SUNEGG_URL),
+            "satuan": "Rp/kg",
+            "periode": f"{jumlah_hari} data terakhir",
+            "wilayah_aktif": "Semua Wilayah",
+            "summary": {
+                "harga_terakhir": int(round(harga_terbaru)),
+                "harga_sebelumnya": int(round(float(data_sebelumnya.get("harga_nasional", harga_terbaru)))),
+                "harga_rata_rata": int(round(harga_rata_rata)),
+                "harga_tertinggi_nasional": int(round(harga_max)),
+                "harga_terendah_nasional": int(round(harga_min)),
+                "persentase_kenaikan": round(persentase_kenaikan, 1),
+                "indeks": float(data_terbaru.get("indeks", 0) or 0),
+                "volatilitas_pct": float(data_terbaru.get("volatilitas_pct", 0) or 0),
+                "jumlah_data": len(data_urut),
+            },
+            "trend": trend,
+            "harga_tertinggi": harga_tertinggi,
+            "wilayah_options": wilayah_options,
+        },
     }
 
-    return response
-
+    return report
 
 def simpan_report_json(report):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as file:
-        json.dump(
-            report,
-            file,
-            ensure_ascii=False,
-            indent=2,
-        )
+        json.dump(report, file, indent=2, ensure_ascii=False)
 
-    log(f"File report berhasil dibuat: {OUTPUT_FILE}")
+    print(f"File report berhasil dibuat: {OUTPUT_FILE}")
 
-
-# =========================
-# MAIN
-# =========================
 
 def main():
     client = None
 
     try:
-        client, collection = koneksi_mongodb()
+        print("Mulai update harga telur DuckCare...")
+
+        client = koneksi_mongodb()
 
         try:
-            data_baru = scrape_indeks_harga()
-            simpan_ke_mongodb(collection, data_baru)
-        except Exception as scrape_error:
-            log(f"Scraping gagal, lanjut pakai data terakhir MongoDB: {scrape_error}")
+            data_harga = scrape_indeks_harga()
+            simpan_ke_mongodb(client, data_harga)
 
-        report = buat_report_json(collection)
+        except Exception as scrape_error:
+            print(f"Scraping SunEgg gagal: {scrape_error}")
+            print("Lanjut membuat report dari data MongoDB yang sudah ada.")
+
+        report = buat_report_json(client, jumlah_hari=30)
 
         simpan_report_json(report)
 
-        log("Proses update report selesai")
+        print("Update harga telur selesai.")
 
     except Exception as error:
-        log(f"ERROR: {error}")
-
-        error_report = {
-            "success": False,
-            "message": str(error),
-            "code": 500,
-            "data": {
-                "updated_at": now_iso(),
-                "sumber": SUNEGG_URL,
-                "satuan": "Rp/kg",
-                "periode": "0 data",
-                "wilayah_aktif": "Semua Wilayah",
-                "summary": {
-                    "harga_terakhir": 0,
-                    "harga_sebelumnya": 0,
-                    "harga_rata_rata": 0,
-                    "harga_tertinggi_nasional": 0,
-                    "harga_terendah_nasional": 0,
-                    "persentase_kenaikan": 0,
-                    "indeks": 0,
-                    "volatilitas_pct": 0,
-                    "jumlah_data": 0,
-                },
-                "trend": [],
-                "harga_tertinggi": [],
-                "wilayah_options": ["Semua Wilayah"],
-            },
-        }
-
-        simpan_report_json(error_report)
-
-        raise
+        print(f"Terjadi error: {error}")
+        raise error
 
     finally:
         if client is not None:
             client.close()
+            print("Koneksi MongoDB ditutup.")
 
 
 if __name__ == "__main__":
