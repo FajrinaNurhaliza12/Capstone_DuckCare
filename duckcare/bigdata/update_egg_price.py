@@ -23,7 +23,14 @@ SUNEGG_URL = "https://sunegg.id/indeks-harga-telur"
 # Harga dasar untuk menghitung indeks harga telur
 HARGA_DASAR = 24501
 
-OUTPUT_DIR = Path("bigdata/output")
+# Lokasi folder tempat file Python ini berada:
+# duckcare/bigdata
+BASE_DIR = Path(__file__).resolve().parent
+
+# Hasil selalu masuk ke:
+# duckcare/bigdata/output
+OUTPUT_DIR = BASE_DIR / "output"
+
 OUTPUT_FILE = OUTPUT_DIR / "report_harga_telur.json"
 
 
